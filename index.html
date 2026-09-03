@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C1 Advanced Practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eef1ec; --surface:#ffffff; --surface-2:#f5f7f3;
+  --ink:#17231f; --ink-soft:#4c5c56; --ink-faint:#7c8a83;
+  --line:#d7ddd3; --line-strong:#b9c2b6;
+  --accent:#0f6e5c; --accent-strong:#0b5346; --accent-soft:#dcece6; --accent-ink:#ffffff;
+  --warn:#a4432a; --warn-soft:#f4ddd3;
+  --shadow:0 1px 2px rgba(23,35,31,.06), 0 4px 14px rgba(23,35,31,.06);
+  --serif:'Spectral',Georgia,'Times New Roman',serif;
+  --sans:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+  --mono:'IBM Plex Mono','SFMono-Regular',Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101714; --surface:#182019; --surface-2:#1d2721;
+    --ink:#eaf1ec; --ink-soft:#b7c4bc; --ink-faint:#83938b;
+    --line:#2b3a33; --line-strong:#3c4d44;
+    --accent:#4fd3ab; --accent-strong:#35b393; --accent-soft:#1b3931; --accent-ink:#06251d;
+    --warn:#e2876a; --warn-soft:#3a2019;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101714; --surface:#182019; --surface-2:#1d2721;
+  --ink:#eaf1ec; --ink-soft:#b7c4bc; --ink-faint:#83938b;
+  --line:#2b3a33; --line-strong:#3c4d44;
+  --accent:#4fd3ab; --accent-strong:#35b393; --accent-soft:#1b3931; --accent-ink:#06251d;
+  --warn:#e2876a; --warn-soft:#3a2019;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--sans);
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:var(--serif); font-weight:600; text-wrap:balance; margin:0 0 .5em;}
+p{margin:0 0 1em;}
+::selection{background:var(--accent-soft);}
+a{color:var(--accent-strong);}
+button{font-family:var(--sans);}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+.view{display:none;}
+.view.active{display:block;}
+.wrap{max-width:1180px; margin:0 auto; padding:0 24px;}
+.hidden{display:none !important;}
+
+/* ---------- START VIEW ---------- */
+#view-start .hero{
+  min-height:100vh; display:flex; flex-direction:column; justify-content:center;
+  padding:64px 24px;
+}
+.hero-inner{max-width:760px; margin:0 auto;}
+.eyebrow{
+  font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--accent-strong); margin-bottom:14px; display:flex; align-items:center; gap:10px;
+}
+.eyebrow::before{content:""; width:22px; height:1px; background:var(--accent-strong); display:inline-block;}
+.hero h1{font-size:clamp(32px,5vw,48px); line-height:1.08; margin-bottom:10px;}
+.hero .sub{font-size:18px; color:var(--ink-soft); max-width:56ch; margin-bottom:36px;}
+.spec-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-bottom:28px;}
+.spec-cell{background:var(--surface); padding:18px 20px;}
+.spec-cell .n{font-family:var(--mono); font-size:22px; font-variant-numeric:tabular-nums; color:var(--accent-strong);}
+.spec-cell .l{font-size:13px; color:var(--ink-soft); margin-top:2px;}
+.note-box{
+  border:1px solid var(--line-strong); background:var(--surface-2); border-radius:10px;
+  padding:16px 18px; font-size:14.5px; color:var(--ink-soft); margin-bottom:32px;
+}
+.note-box b{color:var(--ink);}
+.btn{
+  font-family:var(--sans); font-weight:600; font-size:15px; border-radius:8px; border:1px solid transparent;
+  padding:13px 26px; cursor:pointer; transition:transform .08s ease, background .15s ease, border-color .15s ease;
+  display:inline-flex; align-items:center; gap:8px;
+}
+.btn:active{transform:translateY(1px);}
+.btn-primary{background:var(--accent); color:var(--accent-ink);}
+.btn-primary:hover{background:var(--accent-strong);}
+.btn-ghost{background:transparent; color:var(--ink); border-color:var(--line-strong);}
+.btn-ghost:hover{border-color:var(--accent);}
+.btn-sm{padding:8px 14px; font-size:13.5px;}
+
+/* ---------- MENU VIEW ---------- */
+.page-pad{padding:48px 24px 80px;}
+.page-head{margin-bottom:36px; display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap;}
+.page-head h1{font-size:28px; margin-bottom:4px;}
+.page-head .sub{color:var(--ink-soft); font-size:14.5px;}
+.cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:18px;}
+.card{
+  background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:24px;
+  box-shadow:var(--shadow); display:flex; flex-direction:column; gap:14px;
+}
+.card .tag{
+  font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+  padding:4px 9px; border-radius:5px; width:fit-content;
+}
+.tag-todo{background:var(--surface-2); color:var(--ink-faint); border:1px solid var(--line-strong);}
+.tag-progress{background:var(--warn-soft); color:var(--warn);}
+.tag-done{background:var(--accent-soft); color:var(--accent-strong);}
+.card h3{font-size:20px; margin-bottom:2px;}
+.card .meta{font-size:13.5px; color:var(--ink-soft); font-family:var(--mono);}
+.card .desc{font-size:14.5px; color:var(--ink-soft); flex:1;}
+.progress-bar{height:6px; background:var(--surface-2); border-radius:99px; overflow:hidden; border:1px solid var(--line);}
+.progress-bar > div{height:100%; background:var(--accent); transition:width .3s ease;}
+
+/* ---------- EXAM SHELL ---------- */
+.exam-shell{min-height:100vh; display:flex; flex-direction:column;}
+.topbar{
+  position:sticky; top:0; z-index:20; background:var(--surface); border-bottom:1px solid var(--line);
+  display:flex; align-items:center; justify-content:space-between; padding:12px 24px; gap:16px; flex-wrap:wrap;
+}
+.topbar .tb-left{display:flex; align-items:center; gap:14px;}
+.topbar .tb-title{font-family:var(--serif); font-weight:600; font-size:17px;}
+.topbar .back-link{
+  font-family:var(--mono); font-size:12px; color:var(--ink-soft); text-decoration:none; border:1px solid var(--line-strong);
+  padding:6px 10px; border-radius:6px; cursor:pointer; background:transparent;
+}
+.topbar .back-link:hover{border-color:var(--accent); color:var(--accent-strong);}
+.timer-block{display:flex; align-items:center; gap:10px;}
+.timer-display{
+  font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:20px; font-weight:600;
+  background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:6px 12px; min-width:88px; text-align:center;
+}
+.timer-display.low{color:var(--warn); border-color:var(--warn);}
+.sync-indicator{font-family:var(--mono); font-size:11px; color:var(--ink-faint); white-space:nowrap;}
+.sync-indicator.low{color:var(--warn);}
+.gate-field{display:block; font-size:13px; color:var(--ink-soft); margin-bottom:14px;}
+.gate-field input{display:block; width:100%; margin-top:6px; font-size:16px; padding:11px 13px; border-radius:8px; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink); font-family:var(--sans);}
+.gate-field input:focus{border-color:var(--accent);}
+.gate-error{border:1px solid var(--warn); background:var(--warn-soft); color:var(--warn); border-radius:8px; padding:10px 14px; font-size:13.5px; margin-bottom:16px; display:none;}
+.tabs-row{
+  display:flex; gap:6px; padding:12px 24px; background:var(--surface-2); border-bottom:1px solid var(--line);
+  overflow-x:auto;
+}
+.tab-btn{
+  font-family:var(--mono); font-size:12.5px; white-space:nowrap; padding:8px 13px; border-radius:7px;
+  border:1px solid var(--line-strong); background:var(--surface); color:var(--ink-soft); cursor:pointer;
+  display:flex; align-items:center; gap:7px;
+}
+.tab-btn .cnt{
+  font-size:10.5px; background:var(--surface-2); border-radius:99px; padding:1px 6px; color:var(--ink-faint);
+}
+.tab-btn.active{background:var(--accent); border-color:var(--accent); color:var(--accent-ink);}
+.tab-btn.active .cnt{background:rgba(255,255,255,.25); color:inherit;}
+.tab-btn.answered:not(.active) .cnt{background:var(--accent-soft); color:var(--accent-strong);}
+
+.exam-main{flex:1; padding:32px 24px 100px;}
+.exam-col{max-width:760px; margin:0 auto;}
+.banner{
+  border:1px solid var(--line-strong); background:var(--surface-2); border-radius:10px; padding:14px 16px;
+  font-size:14px; color:var(--ink-soft); margin-bottom:24px;
+}
+.instructions{
+  font-size:14.5px; color:var(--ink-soft); margin-bottom:22px; padding-bottom:18px; border-bottom:1px dashed var(--line-strong);
+}
+.part-heading{display:flex; align-items:baseline; gap:10px; margin-bottom:6px;}
+.part-heading h2{font-size:22px; margin-bottom:0;}
+.part-heading .qrange{font-family:var(--mono); font-size:12.5px; color:var(--ink-faint);}
+.passage-title{font-family:var(--serif); font-size:19px; font-weight:600; text-align:center; margin:18px 0 12px;}
+.passage-sub{font-style:italic; text-align:center; color:var(--ink-soft); font-size:14.5px; margin-bottom:18px;}
+.passage{
+  font-family:var(--serif); font-size:17px; line-height:1.75; color:var(--ink);
+  background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:26px 28px; margin-bottom:26px;
+}
+.passage p{margin:0 0 1.1em;}
+.passage p:last-child{margin-bottom:0;}
+.gapnum{
+  font-family:var(--mono); font-weight:600; color:var(--accent-strong); font-size:13px; vertical-align:super;
+}
+.blank-input{
+  font-family:var(--sans); font-size:15px; border:none; border-bottom:2px solid var(--line-strong);
+  background:var(--accent-soft); color:var(--ink); padding:2px 6px; border-radius:3px 3px 0 0; min-width:90px;
+}
+.blank-input:focus{border-color:var(--accent); background:var(--surface);}
+.blank-input.wide{min-width:220px;}
+.prompt-word{
+  font-family:var(--mono); font-size:12px; letter-spacing:.05em; color:var(--ink-faint); text-align:right;
+  margin-top:-.7em; margin-bottom:1.1em;
+}
+
+.qblock{
+  background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:20px 22px; margin-bottom:14px;
+}
+.qblock .qnum{
+  font-family:var(--mono); font-weight:600; color:var(--accent-strong); font-size:14px; margin-right:8px;
+}
+.qtext{font-size:15.5px; margin-bottom:12px; font-weight:500;}
+.opts{display:flex; flex-direction:column; gap:8px;}
+.opt-row{
+  display:flex; align-items:flex-start; gap:10px; padding:9px 12px; border:1px solid var(--line); border-radius:8px;
+  cursor:pointer; font-size:14.5px; background:var(--surface-2); transition:border-color .12s ease, background .12s ease;
+}
+.opt-row:hover{border-color:var(--accent);}
+.opt-row input{margin-top:3px; accent-color:var(--accent);}
+.opt-row .letter{font-family:var(--mono); font-weight:600; color:var(--ink-faint); min-width:16px;}
+.opt-row:has(input:checked){background:var(--accent-soft); border-color:var(--accent);}
+
+.select-inline{
+  font-family:var(--mono); font-size:14px; padding:7px 10px; border-radius:6px; border:1px solid var(--line-strong);
+  background:var(--surface); color:var(--ink); min-width:70px;
+}
+
+.tx-item{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:20px 22px; margin-bottom:16px;}
+.tx-orig{font-size:15px; margin-bottom:8px;}
+.tx-key{
+  font-family:var(--mono); font-weight:700; letter-spacing:.04em; background:var(--surface-2); border:1px solid var(--line-strong);
+  border-radius:6px; padding:3px 10px; display:inline-block; margin-bottom:12px; font-size:13px;
+}
+.tx-line{font-size:15px; line-height:1.9;}
+
+.expert-grid{display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:26px;}
+@media(min-width:680px){.expert-grid{grid-template-columns:1fr 1fr;}}
+.expert-card{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:18px 20px;}
+.expert-card .expert-letter{
+  font-family:var(--mono); font-weight:700; color:var(--accent-strong); font-size:14px; margin-bottom:8px; display:block;
+}
+.expert-card p{font-family:var(--serif); font-size:15.5px; line-height:1.65; margin:0;}
+
+.match-row{display:flex; align-items:center; gap:14px; padding:12px 0; border-bottom:1px solid var(--line);}
+.match-row:last-child{border-bottom:none;}
+.match-row .mtext{flex:1; font-size:15px;}
+.match-row .qnum{min-width:26px;}
+
+.gap-para{background:var(--surface); border:1px dashed var(--line-strong); border-radius:8px; padding:10px 14px; margin:14px 0; font-size:14px; display:flex; align-items:center; gap:12px;}
+.gap-para .gaplabel{font-family:var(--mono); background:var(--accent); color:var(--accent-ink); border-radius:5px; padding:2px 8px; font-weight:700; font-size:12.5px;}
+
+.option-bank{margin-top:30px; margin-bottom:10px;}
+.option-bank h4{font-size:14px; text-transform:uppercase; letter-spacing:.06em; font-family:var(--sans); color:var(--ink-faint); margin-bottom:12px;}
+.bank-grid{display:grid; grid-template-columns:1fr; gap:12px;}
+@media(min-width:680px){.bank-grid{grid-template-columns:1fr 1fr;}}
+.bank-item{background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:14px 16px; font-size:14px;}
+.bank-item .lt{font-family:var(--mono); font-weight:700; color:var(--accent-strong); margin-right:6px;}
+
+.footer-nav{
+  position:sticky; bottom:0; background:var(--surface); border-top:1px solid var(--line);
+  padding:14px 24px; display:flex; justify-content:space-between; align-items:center; gap:12px;
+}
+
+/* Writing */
+.task-card{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:22px 24px; margin-bottom:20px;}
+.task-card .task-meta{font-family:var(--mono); font-size:12px; color:var(--ink-faint); margin-bottom:10px; text-transform:uppercase; letter-spacing:.05em;}
+.notes-box{border:1px solid var(--line-strong); border-radius:8px; padding:14px 18px; margin:14px 0; background:var(--surface-2);}
+.notes-box ul{margin:8px 0 0; padding-left:20px;}
+.notes-box .nb-title{font-weight:600; text-decoration:underline;}
+.quote-box{border:1px solid var(--line-strong); border-radius:8px; padding:14px 18px; margin:14px 0; background:var(--surface-2); font-style:italic; font-size:14.5px;}
+.quote-box p{margin:0 0 8px;}
+.quote-box p:last-child{margin:0;}
+.task-choice{border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin-bottom:10px; cursor:pointer; background:var(--surface);}
+.task-choice:hover{border-color:var(--accent);}
+.task-choice.selected{border-color:var(--accent); background:var(--accent-soft);}
+.task-choice .tc-head{display:flex; gap:10px; align-items:baseline; font-weight:600; margin-bottom:6px;}
+.task-choice .tc-num{font-family:var(--mono); color:var(--accent-strong);}
+textarea.essay{
+  width:100%; min-height:340px; font-family:var(--serif); font-size:16px; line-height:1.7; padding:18px 20px;
+  border:1px solid var(--line-strong); border-radius:10px; background:var(--surface); color:var(--ink); resize:vertical;
+}
+.wordcount{
+  display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-family:var(--mono); font-size:12.5px; color:var(--ink-faint);
+}
+.wordcount .wc-num.ok{color:var(--accent-strong); font-weight:600;}
+.wordcount .wc-num.low, .wordcount .wc-num.high{color:var(--warn); font-weight:600;}
+
+/* Summary */
+.summary-section{margin-bottom:36px;}
+.summary-section h2{font-size:20px; border-bottom:2px solid var(--line); padding-bottom:10px; margin-bottom:16px;}
+.summary-table{width:100%; border-collapse:collapse; font-size:14px;}
+.summary-table th{
+  text-align:left; font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.05em;
+  color:var(--ink-faint); padding:6px 10px; border-bottom:1px solid var(--line-strong);
+}
+.summary-table td{padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top;}
+.summary-table tr:nth-child(even){background:var(--surface-2);}
+.ans-empty{color:var(--ink-faint); font-style:italic;}
+.summary-essay{white-space:pre-wrap; font-family:var(--serif); background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:16px 18px; font-size:15px; line-height:1.7; margin-top:8px;}
+
+.scroll-x{overflow-x:auto;}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+<!-- ============ GATE ============ -->
+<div class="view active" id="view-gate">
+  <div class="hero">
+    <div class="hero-inner" style="max-width:440px;">
+      <div class="eyebrow">Acceso restringido</div>
+      <h1 style="font-size:30px;">Ingresa a la práctica</h1>
+      <p class="sub" style="font-size:15px; margin-bottom:26px;">Pide la contraseña y tu código de estudiante a tu profesor. No escribas tu nombre real: el código es lo único que te identifica en la plataforma.</p>
+      <div class="gate-error" id="gate-error"></div>
+      <label class="gate-field">Contraseña de acceso
+        <input type="password" id="gate-password" autocomplete="current-password">
+      </label>
+      <label class="gate-field">Tu código de estudiante
+        <input type="text" id="gate-code" placeholder="p. ej. EST-014" autocomplete="off">
+      </label>
+      <label class="gate-field">Curso / sección
+        <input type="text" id="gate-course" placeholder="p. ej. ING301-2026-2" autocomplete="off">
+      </label>
+      <button class="btn btn-primary" onclick="submitGate()" style="justify-content:center; width:100%;">Entrar →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ START ============ -->
+<div class="view" id="view-start">
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Plataforma de práctica &middot; piloto</div>
+      <h1>C1 Advanced — Mock&nbsp;1</h1>
+      <p class="sub">Réplica interactiva del examen que subiste: los mismos textos, huecos y preguntas de Reading &amp; Use of English, Writing y Listening, para practicar el formato y los tiempos.</p>
+
+      <div class="spec-grid">
+        <div class="spec-cell"><div class="n">90&nbsp;min</div><div class="l">Reading &amp; Use of English · 8 partes · 56 preguntas</div></div>
+        <div class="spec-cell"><div class="n">90&nbsp;min</div><div class="l">Writing · Part 1 obligatoria + 1 de 3 en Part 2</div></div>
+        <div class="spec-cell"><div class="n">~40&nbsp;min</div><div class="l">Listening · 4 partes · 30 preguntas</div></div>
+      </div>
+
+      <div class="note-box">
+        <b>Nota sobre este piloto:</b> tus respuestas se guardan en este navegador mientras avanzas, pero no se corrigen automáticamente (el PDF original no trae una hoja de respuestas). La sección de Listening muestra las preguntas exactas del examen, pero todavía no incluye el audio — es la primera versión de esa parte.
+      </div>
+
+      <button class="btn btn-primary" onclick="go('menu')">Comenzar →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MENU ============ -->
+<div class="view" id="view-menu">
+  <div class="wrap page-pad">
+    <div class="page-head">
+      <div>
+        <h1>Elige una sección</h1>
+        <div class="sub" id="session-info">Puedes hacerlas en cualquier orden y retomar donde quedaste.</div>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <span class="sync-indicator">—</span>
+        <button class="btn btn-ghost btn-sm" onclick="pushToServer(true)">Sincronizar ahora</button>
+        <button class="btn btn-ghost btn-sm" onclick="go('summary')">Ver mis respuestas →</button>
+        <button class="btn btn-ghost btn-sm" onclick="logoutGate()">Salir</button>
+      </div>
+    </div>
+    <div class="cards" id="menu-cards"></div>
+  </div>
+</div>
+
+<!-- ============ READING ============ -->
+<div class="view" id="view-reading">
+  <div class="exam-shell">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="back-link" onclick="go('menu')">← Menú</button>
+        <div class="tb-title">Reading &amp; Use of English</div>
+      </div>
+      <div class="timer-block">
+        <span class="sync-indicator">—</span>
+        <button class="back-link" onclick="resetTimer('reading')">reiniciar cronómetro</button>
+        <div class="timer-display" id="timer-reading">90:00</div>
+      </div>
+    </div>
+    <div class="tabs-row" id="reading-tabs"></div>
+    <div class="exam-main"><div class="exam-col" id="reading-content"></div></div>
+    <div class="footer-nav">
+      <button class="btn btn-ghost" id="reading-prev" onclick="shiftPart('reading',-1)">← Parte anterior</button>
+      <button class="btn btn-primary" id="reading-next" onclick="shiftPart('reading',1)">Siguiente parte →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ WRITING ============ -->
+<div class="view" id="view-writing">
+  <div class="exam-shell">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="back-link" onclick="go('menu')">← Menú</button>
+        <div class="tb-title">Writing</div>
+      </div>
+      <div class="timer-block">
+        <span class="sync-indicator">—</span>
+        <button class="back-link" onclick="resetTimer('writing')">reiniciar cronómetro</button>
+        <div class="timer-display" id="timer-writing">90:00</div>
+      </div>
+    </div>
+    <div class="tabs-row" id="writing-tabs"></div>
+    <div class="exam-main"><div class="exam-col" id="writing-content"></div></div>
+  </div>
+</div>
+
+<!-- ============ LISTENING ============ -->
+<div class="view" id="view-listening">
+  <div class="exam-shell">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="back-link" onclick="go('menu')">← Menú</button>
+        <div class="tb-title">Listening</div>
+      </div>
+      <div class="timer-block">
+        <span class="sync-indicator">—</span>
+        <button class="back-link" onclick="resetTimer('listening')">reiniciar cronómetro</button>
+        <div class="timer-display" id="timer-listening">40:00</div>
+      </div>
+    </div>
+    <div class="tabs-row" id="listening-tabs"></div>
+    <div class="exam-main"><div class="exam-col">
+      <div class="banner">🎧 <b>Piloto sin audio todavía:</b> estas son las preguntas exactas del examen. Responde según lo que tú decidas practicar (o incorpora tu propio audio) — esta versión aún no reproduce sonido.</div>
+      <div id="listening-content"></div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ============ SUMMARY ============ -->
+<div class="view" id="view-summary">
+  <div class="wrap page-pad">
+    <div class="page-head">
+      <div>
+        <h1>Resumen de mis respuestas</h1>
+        <div class="sub">Vista de repaso — sin corrección automática.</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="go('menu')">← Menú</button>
+    </div>
+    <div id="summary-body"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+/* =================================================================
+   DATA
+   ================================================================= */
+
+var READING_PARTS = [
+{
+  id:1, label:"Part 1", type:"mcq-cloze", range:"1–8",
+  instructions:"For questions 1-8, read the text below and decide which answer (A, B, C or D) best fits each gap.",
+  title:"Smart gadgets",
+  passage:"Today's smartphones are smart but tomorrow's gadgets will inevitably be even smarter. According to experts, soon they will have 'emotional intelligence'. They will be able to {{1}} how we feel and react to our mood, by joining in our happiness or leaving us alone when we are angry.<P>Scientists are {{2}} a technology that uses both speech-recognition software and special sensors to figure out how the user is feeling. Their goal is to develop a way to accurately {{3}} the emotional state of a person holding a smartphone. Another project is looking at {{4}} emotional detection into GPS car navigation devices.<P>The vision is of a dashboard GPS device that would register facial expressions, voice intonation and hand movements to work out the emotions of the driver. For example, if the driver were experiencing stress, it could temporarily {{5}} giving additional instructions or even turn itself off.<P>But for many, there is something slightly {{6}} about emotion recognition. It {{7}} into yet another part of our lives which are already being closely {{8}} by technology, not always for our benefit.",
+  questions:[
+    {n:1, opts:["expose","perceive","guess","realise"]},
+    {n:2, opts:["operating","developing","working","progressing"]},
+    {n:3, opts:["count","rank","value","measure"]},
+    {n:4, opts:["creating","locating","absorbing","building"]},
+    {n:5, opts:["put up","take over","hold off","set back"]},
+    {n:6, opts:["unreasonable","disturbing","irregular","impossible"]},
+    {n:7, opts:["intrudes","invades","interrupts","forces"]},
+    {n:8, opts:["searched","supervised","monitored","handled"]}
+  ]
+},
+{
+  id:2, label:"Part 2", type:"open-cloze", range:"9–16",
+  instructions:"For questions 9-16, read the text below and think of the word which best fits each gap. Use only one word in each gap.",
+  title:"The Post-it note",
+  passage:"It has been described as the solution to a problem nobody realised existed. But that hasn't stopped the self-attaching Post-it note - that little square piece of paper that sticks in {{9}} a clever way that it can be removed, leaving no damage - {{10}} becoming an essential piece of stationery worldwide.<P>{{11}} so many other simple inventions, the Post-it note was invented by accident. A scientist working for a US company was attempting to develop a super-strong adhesive, {{12}} instead came up with a super-weak one. It was just strong {{13}} to stick light objects together. What was special about it was that the objects could be separated {{14}} leaving a mark.<P>{{15}} five years, he tried convincing his bosses of the importance of his invention. Sadly, nobody {{16}} find a use for it. Then a colleague noticed that bookmarks in his book kept falling out, and he was continually losing his place. Remembering the work of this colleague, the scientist set about designing a reusable bookmark using the super-weak adhesive and the Post-it note was born.",
+  blanks:[9,10,11,12,13,14,15,16]
+},
+{
+  id:3, label:"Part 3", type:"word-formation", range:"17–24",
+  instructions:"For questions 17-24, read the text below. Use the word given in capitals to form a word that fits in the gap in the same line.",
+  title:"The benefits of being multi-lingual",
+  paragraphs:[
+    {text:"Speaking two or more languages well has been shown to be highly beneficial in a number of ways, some quite surprising. First of all, learning a second language makes you focus on the mechanics of language and increases your {{17}} of your first language.", prompt:"AWARE"},
+    {text:"Secondly, your memory improves. Learning a second language involves memorising rules and vocabulary, which researchers say helps strengthen your mental 'muscle'. {{18}}, this explains why multi-lingual people are better at remembering lists or sequences.", prompt:"APPEAR"},
+    {text:"A recent Spanish study reveals that multi-lingual people are more {{19}}. They are also better able to focus on important information and discard what is {{20}}.", prompt:"PERCEIVE / RELEVANT"},
+    {text:"What's more, the ability to switch rapidly between languages makes speakers good at multi-tasking. In one study, {{21}} used a driving simulator while doing separate, distracting tasks. Interestingly, multi-lingual people made fewer errors.", prompt:"PARTICIPATE"},
+    {text:"People who are fully bilingual are also better at being {{22}}. Some Austrian researchers claim that bilinguals who run through decisions in both languages feel that their {{23}} are more considered and the person behaves more {{24}} as a result.", prompt:"DECIDE / CONCLUDE / CONFIDENCE"}
+  ],
+  blanks:[17,18,19,20,21,22,23,24]
+},
+{
+  id:4, label:"Part 4", type:"key-transform", range:"25–30",
+  instructions:"For questions 25-30, complete the second sentence so that it has a similar meaning to the first sentence, using the word given. Do not change the word given. You must use between three and six words, including the word given.",
+  items:[
+    {n:25, s1:"There will be no change to our plans, despite the likelihood of rain.", key:"IS", pre:"We have decided not to change our plans even", post:"strong possibility of rain."},
+    {n:26, s1:"Can you summarise for me what took place at the meeting?", key:"GIVE", pre:"Can you", post:"what took place at the meeting?"},
+    {n:27, s1:"The problem that his team had been working on was solved by Jake.", key:"SOLUTION", pre:"Jake came up", post:"the problem which his team had been working on."},
+    {n:28, s1:"I was very much relieved to see my brother walking down the street towards me.", key:"SIGHT", pre:"I felt enormous", post:"my brother walking down the street towards me."},
+    {n:29, s1:"Maria immediately accepted the offer of a place at the country's top university.", key:"HESITATION", pre:"Maria", post:"the offer of a place at the country's top university."},
+    {n:30, s1:"Employees can choose to work additional hours at the weekend.", key:"EACH", pre:"It's up", post:"they work additional hours at the weekend."}
+  ]
+},
+{
+  id:5, label:"Part 5", type:"mcq-reading", range:"31–36",
+  instructions:"Read the introduction to an academic book about parenting. For questions 31-36, choose the correct answer.",
+  title:"Parenting in the 21st Century",
+  passage:"I decided to write this book for several reasons. I was dissatisfied with parenting-advice literature, finding it to be riddled with oversimplified messages, and often unrelated to or at odds with current scientific knowledge. I also felt certain after years as a professor, researcher, and author of textbooks on child development, that contemporary theory and research contain many vital, practical messages&hellip; ones crucial for parents to understand if they are to effectively help their children develop. Furthermore, I've been approached on countless occasions by uneasy parents, frustrated by a wide array of child-rearing issues. I became convinced, therefore, that parents needed a consistent way of thinking about their role to guide them in making effective decisions.<P>It's little wonder that parents are perplexed about what approach to take to child rearing. Today's world is one which makes parenting exceedingly difficult. In many industrialised countries, the majority of mothers of pre-school children are in the workforce, though not always through choice. This group in particular tends to lament the lack of practical advice for parents in their child-rearing roles. Many parents simultaneously complain that they're busier than ever and that due to the growing demands of their jobs, they have little time for their children. Nations of pressured, preoccupied parents have emerged in an era of grave public concern for the well-being of youth.<P>It would seem from looking at current media that the younger generation are achieving less well than they should and that they often display a worrying lack of direction, manifested at its worst in a variety of social problems. These problems seem to have infiltrated even the most economically privileged sectors of the population, affecting young people who, on the face of things, have been granted the best of life's chances. Accounts of children being deprived of their childhood and growing up too fast, or the dangers of promoting materialism to young people abound in the media.<P>In many countries there is a growing sense of 'youth alienation' and parents rightly fear for their own children's futures. But agreement on what parents can and should do to shield children from underachievement and demoralisation eludes those who seek it on the shelves of libraries or bookstores. Parenting advice has always been in a state of flux, at no time more so than the present. While the fundamental goal of parenting &ndash; to instil character and moral development &ndash; has stood firm amid the various passing fashions in child care over the years, the approach to accomplishing this has varied considerably.<P>Some authors, convinced that parents are in control of what their children become, advise a 'get tough' approach. The educational parallel to this 'parent-power' stance is to train and instruct as early as possible, and this has been justified by claims of maximising brain growth or securing high achievement by starting sooner. Other authors, however, attribute many of today's social problems to the excessive pressure put on children by parents. According to these 'child-power' advocates, children have their own built-in timetables for maturing and learning. Waiting for cues that children are ready, these experts say, will relieve the stress that fuels youth discontent and rebellion. The reality, however, is that there are no hard-and-fast rules.<P>Current thinking on child-rearing advice mirrors historical shifts in theories of development and education. The most disturbing trend in the literature has been a move to deny that parents make <i>any</i> notable contribution to their children's development. Indeed, according to one highly publicised book, children's genes, and secondarily their peer groups, not parents, dictate how children turn out. This public declaration of parental weakness comes at a time when many busy parents are poised to retreat from family obligations, and, indeed, it grants them licence to do so.<P>From the multitude of theories on nature and nurture, I have chosen one to serve as the framework for this book: sociocultural theory, which originated with the work of Russian psychologist Lev Vygotsky. Early in the 20th century, he explained how children's social experiences transform their genetic inheritance leading their development forward and ensuring that they become competent, contributing members of society. Vygotsky championed the idea that as children engage in dialogues with more expert members of their culture, they integrate the language of those interactions into their inner mental lives and use it to think, overcome challenges and guide their own behaviour.",
+  questions:[
+    {n:31, q:"The author says that one reason for writing the book was the fact that", opts:["research suggests the quality of parenting skills has deteriorated.","today's scientific views of parenting seem to be flawed.","there is a lack of parenting literature written in a straightforward way.","the available advisory material does not reflect current academic thinking."]},
+    {n:32, q:"What does the author say about the concerns parents have?", opts:["Some of the issues are contradictory in nature.","They are understandable given the challenges of modern life.","They cause a disproportionate amount of stress in family relationships.","The balance between work and family life is only a secondary problem."]},
+    {n:33, q:"What view of young people is promoted in the media?", opts:["They want to live an adult life before they are mentally ready.","They are unaware of the opportunities provided for them.","They are unable to appreciate the value of money.","They fail to demonstrate a sense of purpose."]},
+    {n:34, q:"What does the author say in the fourth paragraph about parenting advice?", opts:["Its core objective has remained constant.","Its ideology stems from contemporary social issues.","It traditionally placed strong emphasis on the protection of the child.","It currently benefits from techniques tried and tested by previous generations."]},
+    {n:35, q:"In the fifth paragraph, what point is the author making about bringing up children?", opts:["There is an absence of consensus on child-rearing among the experts themselves.","Educational policies should be revised in the light of recent findings.","Strict parents tend to have children who are academically unsuccessful.","One approach to child-rearing appears to be more effective than all others."]},
+    {n:36, q:"What criticism of contemporary thinking on child-rearing does the author make?", opts:["It repeats theories which have no solid foundation.","It places too much importance on formal education.","It encourages parents to neglect their responsibilities.","It undermines the role of friends in children's development."]}
+  ]
+},
+{
+  id:6, label:"Part 6", type:"multi-match-select", range:"37–40",
+  instructions:"You are going to read extracts from articles in which four experts discuss the reasons why animals, including humans, sleep. For questions 37-40, choose from the experts A-D. The experts may be chosen more than once.",
+  title:"Why do we sleep?",
+  experts:[
+    {letter:"A", text:"Although an average human spends a third of their life sleeping, there are great variations in how much time other animals devote to it. For some, it appears to be remarkably little, though there is clear evidence that all species do spend some time asleep. As many major bodily restorative functions occur almost entirely during that time, it seems reasonable to conclude that this is the principal purpose of sleep. The benefits to the human memory of sleep still need to be assessed accurately and conclusively, however, and may indeed have been overrated. Indeed, some assert &ndash; though the findings they cite are unconvincing &ndash; that sleep is merely something that animals are able to enjoy when they have no more pressing needs, such as eating or reproducing. In many circumstances, or so they say, sleeping may simply be a less dangerous choice than roaming around and exposing oneself to predators. However, evidence to support this view remains sparse at best."},
+    {letter:"B", text:"Most experts believe that sleep is a universal requirement in animals, and I would not differ from that viewpoint. It is nevertheless true that nobody has yet identified the core function of sleep. Sleeping at night or day was very probably an adaptation for survival at a time of daily vulnerability through low visibility or oppressive temperature. Over millennia, its role developed and is now far more complex. The argument that it serves predominantly to maintain and repair the body fails to convince, as this can be done while resting as well as while sleeping. Of more interest is the research into the role of sleep in memory, particularly memory consolidation. There is solid evidence of its prime importance in this area, and the significance of the variations in electrical activity detected in the brain during sleep remains a fascinating area to investigate."},
+    {letter:"C", text:"Nobody really knows why we sleep, though theories and counter-theories abound. Research into the functions of sleep has proved beyond doubt, in my opinion, that it assists in memory formation. It is certain, however, that sleep is important for other reasons, and I subscribe to the view that its primary role is to allow us to recover from any damage or wear sustained during waking hours. Given this, it fascinates me to discover that some animals, though admittedly very few, have no need for it. The evidence for this, however unlikely it may seem, appears indisputable. Nevertheless, this does not lead me to conclude, as others have done, that sleep is merely a means of conserving energy at times when other activity would serve no useful purpose. It is certainly safe to say that the investigation into and debate about the reasons why animals sleep will continue for a long time."},
+    {letter:"D", text:"Why animals sleep is the subject of debate, and yet the search for complex reasons may be misguided. One proposition is that sleep restores the brain and body in a way impossible to achieve through resting whilst awake. I believe, however, that this need for periods of sleep has its roots in the simple fact that in nature, efficient use of energy resources is vital &ndash; if a species uses those it has even more effectively, it gains an advantage over similar species, especially if sleep occurs during a part of the day or night with little opportunity to do anything more useful such as obtain food. There is ample evidence that, without exception, no species can survive without sleep, and there are obvious advantages from an evolutionary point of view for animals to sleep through periods of time during which otherwise they would be most at risk from predators."}
+  ],
+  matchLetters:["A","B","C","D"],
+  matchHeading:"Which expert",
+  questions:[
+    {n:37, q:"has a different view from the others regarding whether all animals sleep?"},
+    {n:38, q:"shares D's view on whether sleep evolved as a way for animals to remain safe?"},
+    {n:39, q:"expresses a different view from B on the extent to which sleep aids memory?"},
+    {n:40, q:"takes a similar view to C regarding the importance of sleep for body repair and maintenance?"}
+  ]
+},
+{
+  id:7, label:"Part 7", type:"gapped-text", range:"41–46",
+  instructions:"Read an extract from a magazine article below. Six paragraphs have been removed from the extract. For questions 41-46, choose the correct paragraph from A-G to fill each gap. There is one extra paragraph which you do not need to use.",
+  title:"Money-making Mantas",
+  sub:"Manta rays have the potential to generate substantial long-term income for many coastal communities around the world, provided that stocks remain healthy.",
+  segments:[
+    "Manta rays are always on the move. Unlike the other 500 or so species in the ray and skate family, for mantas, lying on the bottom of the ocean, blending in with the environment or conserving energy, isn't an option. From the moment they're born &ndash; released free and autonomous &ndash; to the moment they die, three to four decades later if they're lucky, they must remain constantly, ceaselessly on the move.",
+    "GAP41",
+    "Movement, however, is in one direction only &ndash; forward: they have no means to reverse course. Although they can ascend or descend, turn left or right, it's always with, and as a result of, forward propulsion achieved by waving their pectoral fins in the same way that a bird achieves flight by flapping its wings. A manta in motion, it has to be said, cuts a pretty impressive figure.",
+    "GAP42",
+    "For those fortunate enough to come upon a manta doing this in its natural setting, the impression is almost universal: they are perceived as majestic animals, graceful, benign, sometimes curious with the sparkle of intelligence in their unblinking eyes. Indeed, mantas are considered to be the most intelligent fish in the sea, with the highest brain-to-body mass ratio of any member of the ray family. So, how feasible is it that you'll encounter one of these magnificent fish &ndash; given that their numbers have declined significantly over the last decade?",
+    "GAP43",
+    "Some places, such as the tiny Micronesian island of Yap, go further still. There the allure of being with manta rays is the very attraction that sells the package, bringing millions of dollars into the local economy. Manta ray dives on Ningaloo Reef in Western Australia have overtaken whale shark tours as the big-draw money maker for local companies, while Bali's Manta Point at Nusa Penida brings in $3 million a year.",
+    "GAP44",
+    "Reef manta rays in this habitat have been studied for more than a decade. Each individual within the resident population has been identified by its characteristic markings and colouration, and the population is known to number around 146. The area's dive and snorkel operators earn a combined $3.4 million a year directly from their manta encounters. Hence, each of the identified mantas currently brings in $23,288 a year.",
+    "GAP45",
+    "This doesn't reflect the manta's additional value to Hawaii's local tourism infrastructure by creating a revenue stream for airlines, hotels, car-rental firms, taxis, restaurants and so on which provide employment. Nature tourists flock to the area and while they are there, do not spare any expense in the name of comfort and enjoyment.",
+    "GAP46",
+    "Not for nothing has it acquired this label. However, if the mantas were ever to become extinct, all that the operators would have left to sell is 'coral gardens' and vacant seawater &ndash; and that doesn't add up to much of a business plan."
+  ],
+  options:[
+    {letter:"A", text:"To realise tourists' dreams, the most popular live-aboard dive boats tailor their cruise itineraries to locations where there is a good likelihood of seeing a manta. Similarly, land-based operators exploit known local haunts on day trips, getting as many divers to the mantas as they can fit aboard their boats."},
+    {letter:"B", text:"Clearly then, from the financial perspective, the manta isn't just another fish in Hawaiian waters; the ray is an economic benefactor that can legitimately, and accurately, be described as 'The Million Dollar Manta'."},
+    {letter:"C", text:"This is necessary as it allows them to breathe and also find food. As filter-feeding specialists, they need to swim to capture and engulf the small fish and microscopic plankton upon which they feed."},
+    {letter:"D", text:"Indeed, a few years ago, the oceanic manta ray became the first ray to be officially listed as a protected species. This means their habitats must be conserved and restored. But mantas can migrate across large distances, so they're still vulnerable to being fished as they roam. And the reef manta is still unprotected."},
+    {letter:"E", text:"The draw of the manta ray is an inestimable windfall for scuba diving and snorkelling businesses. And there's no better example of the financial value of manta encounters to a local economy than the success of the Kona district of Hawaii."},
+    {letter:"F", text:"Scuba diving and snorkelling enthusiasts the world over actively seek out encounters with manta rays. Destinations such as Hawaii, the Maldives and Mexico are popular sites to observe this large creature as it glides through the water."},
+    {letter:"G", text:"With a lifespan of 40-plus years, these individuals will, over the course of a lifetime, generate a seven-figure sum for the local economy from tourist excursions alone."}
+  ],
+  gaps:[41,42,43,44,45,46]
+},
+{
+  id:8, label:"Part 8", type:"multi-match-select", range:"47–56",
+  instructions:"Read the article below containing five managers' advice about asking for a pay rise. For questions 47-56, choose the correct manager. The managers may be chosen more than once.",
+  title:"How to get a pay rise",
+  sub:"Do you feel you're worth more than your company is paying you? We asked a group of managers for some advice on how to go about asking for a pay rise.",
+  experts:[
+    {letter:"A", name:"Manager A", text:"Try asking yourself a series of questions in order to establish whether you deserve a pay rise. If you were in charge, would you award a pay rise to someone like you? What financial benefits have you brought to the company? How have you helped with the smooth running of your department? Have you introduced any new ideas or working practices? Use your answers to provide the facts that will allow your boss to justify your increase to senior management. You should be able to outline what you hope to achieve in the next 18 months and how you could improve your work. Exercise some caution, however. Think about the effects on your work-life balance before you pledge to double your workload, or your family may never forgive you!"},
+    {letter:"B", name:"Manager B", text:"Whatever you do, don't go to your boss with sob stories about debts or the fact that you need a new car. Pleading for more money on emotional grounds will invariably lead to a negative response. Confrontation isn't advisable, either. Trying to 'blackmail' your boss by claiming that a rival company has offered you a better deal, then saying you'll walk out unless the company matches it, is a sure way to get shown the door. On the other hand, you can't expect your boss to offer a pay rise as a matter of course. If you keep a low profile in the company, your achievements are unlikely to be recognised. You need to convince your boss that your services are worth more than you're currently being paid. Even better, show how your future services will make the company more money than it spends on the financial package you're requesting."},
+    {letter:"C", name:"Manager C", text:"An ex-colleague of mine once hired a consultant from a very expensive firm to do a job comparable to his own, and then 'noticed' that this person earned considerably more than him. He subsequently arranged a meeting with his boss in order to bring the discrepancy to her attention and request adequate compensation. I don't know that I'd recommend this approach to everyone, but it's definitely worth finding out what people in comparable roles within your firm or in rival firms earn, and using this in your negotiations. You may not get what you want immediately &ndash; your boss may have to review the budgets, or seek the opinions of others. You can, however, agree how you intend to take things forward and set a time for a pay review in the future."},
+    {letter:"D", name:"Manager D", text:"From talking to my colleagues, the consensus seems to be that it's best to address the issue head on and have a frank face-to-face chat with your immediate superior. Make sure you give some idea in advance about what you want to talk about, though. Simply turning up outside your boss's office after a particularly bad day is likely to lead to a quick brush-off. Preparation is key. Have a clear idea of what you want and how you're going to get it. Obviously, the idea is to prove how indispensable you are, but keep it succinct. Make sure you can present your successes clearly and simply, and stick to the most recent. Your boss is a busy person; don't bore them with an endless list of your triumphs. Proof is also important; wherever possible, provide testimonials from happy clients or senior managers in the company."},
+    {letter:"E", name:"Manager E", text:"Most firms deal with pay rises and promotions in a standard way. If annual pay reviews are the norm where you work, you will have to have a good reason for wanting your salary looked at as a special case. If you decide it's worth trying, timing is crucial. Turning up just before a board meeting or just after your company has issued a profit warning is unlikely to be a good idea. If possible, your meeting should coincide with the completion of a specific project, especially if you were heavily involved. And remember that pay is only one part of the job package. Your boss may refuse a pay rise but offer you an improved pension deal, an enhanced bonus package or share options."}
+  ],
+  matchLetters:["A","B","C","D","E"],
+  matchHeading:"Which manager gives the following advice about getting a pay rise?",
+  questions:[
+    {n:47, q:"Take the company's current financial situation into account before making your request."},
+    {n:48, q:"Demonstrate how increasing your pay will be cost-effective for the company."},
+    {n:49, q:"Be brief when outlining your achievements to your boss."},
+    {n:50, q:"Be prepared to consider an alternative to an increase in salary."},
+    {n:51, q:"Use evidence from others to support claims about your performance."},
+    {n:52, q:"Ensure your boss is able to argue your case to higher authorities."},
+    {n:53, q:"Be patient and show a willingness to wait if necessary."},
+    {n:54, q:"Bear in mind the company culture regarding salary increases."},
+    {n:55, q:"Allow your boss the opportunity to consider your request prior to your initial meeting."},
+    {n:56, q:"Avoid trying to draw on sympathy when appealing to your boss."}
+  ]
+}
+];
+
+var WRITING_PART1 = {
+  n:1,
+  prompt:"Your class has watched a television documentary on the impact of global tourism. You have made the notes below:",
+  areas:["the environment","local economies","international understanding"],
+  opinions:["“Increased travel can have major effects on wildlife and nature.”","“The survival of local economies depends on tourism.”","“Travel helps us understand others better.”"],
+  task:"Write an essay discussing <b>two</b> of the areas affected in your notes. You should <b>explain which area has been more affected</b> by global tourism, <b>giving reasons</b> in support of your answer.",
+  extra:"You may, if you wish, make use of the opinions expressed in the documentary, but you should use your own words as far as possible."
+};
+
+var WRITING_PART2 = [
+  {n:2, kind:"review", prompt:"Your town recently held its first &lsquo;Sport for All&rsquo; day, with both adults and children competing in different sporting events. The aim of the day was to encourage more people to participate in sport. You have been asked to write a review of this day for your college magazine. In your review you should briefly describe the day, say whether its aim was achieved and outline any improvements for the next &lsquo;Sport for All&rsquo; day.", write:"Write your <b>review</b>."},
+  {n:3, kind:"letter", prompt:"You have read an article in your college magazine about the effects of the internet on studying. The article focuses on the negative effects, in particular the influence of social-networking sites and email. You feel the article has too negative a view of the way students use the internet, and decide to write a letter to the editor explaining your opinion.", write:"Write your <b>letter</b>."},
+  {n:4, kind:"proposal", prompt:"The place where you work has opened an office in another country, and a group from that office is coming for a three-day visit to your workplace to learn more about the business. Your manager has asked you to write a proposal outlining training activities you think would be useful as well as social events after work.", write:"Write your <b>proposal</b>."}
+];
+
+var LISTENING_PARTS = [
+{
+  id:1, label:"Part 1", range:"1–6",
+  instructions:"You will hear three different extracts. For questions 1-6, choose the answer which fits best according to what you hear. There are two questions for each extract.",
+  extracts:[
+    {name:"Extract One", context:"You overhear two friends discussing a new film, which is based on a novel.", questions:[
+      {n:1, q:"They both think that the film works because", opts:["it has a very original structure.","the audience is already familiar with the plot.","the director is so experienced at book adaptations."]},
+      {n:2, q:"When they discuss the star of the film, the woman", opts:["offers a less positive view than the man.","adds details to support the man's description.","questions what the man is basing his comments on."]}
+    ]},
+    {name:"Extract Two", context:"You hear two students talking about new human-like robots designed to work in space.", questions:[
+      {n:3, q:"What does the man think about the robots?", opts:["He questions their ability to perform any useful function.","He dismisses them as pure fantasy.","He fears people may become too reliant on them."]},
+      {n:4, q:"The woman thinks the robots are popular with the public because of", opts:["the appealing nature of their appearance.","their ability to sustain a basic discussion.","the novelty value they have."]}
+    ]},
+    {name:"Extract Three", context:"You hear two friends talking about what is known as a pay-what-you-want restaurant, which has no fixed prices.", questions:[
+      {n:5, q:"The friends both think that the restaurant", opts:["gets good publicity.","promotes social responsibility.","makes little profit."]},
+      {n:6, q:"The woman didn't enjoy her meal at the restaurant because she was", opts:["disappointed by the poor quality of the food.","distracted by having to make a judgement.","disturbed by the intrusive level of noise."]}
+    ]}
+  ]
+},
+{
+  id:2, label:"Part 2", range:"7–14", type:"gapfill",
+  instructions:"You will hear a woman called Jane Hill talking about her work for a charity that aims to protect sea turtles. For questions 7-14, complete the sentences with a word or short phrase.",
+  title:"SEA TURTLES",
+  sentences:[
+    {n:7, text:"Jane mentions that a {{7}} is common to all species of turtle except one."},
+    {n:8, text:"Jane identifies the sense of {{8}} as being the most highly developed."},
+    {n:9, text:"The term {{9}} is used to describe the behaviour of female turtles which leave a beach without laying eggs."},
+    {n:10, text:"Jane explains that the gender of turtles can depend on the {{10}} of the sand in which eggs are buried."},
+    {n:11, text:"Jane reports that {{11}} is the usual diet of green sea turtles."},
+    {n:12, text:"Jane admits that filling in {{12}} on the beach is a boring part of her work."},
+    {n:13, text:"Jane explains that newly acquired funds will be used to improve the charity's {{13}} along the beach."},
+    {n:14, text:"Jane was shocked to learn that {{14}} present a hazard for sea turtles."}
+  ]
+},
+{
+  id:3, label:"Part 3", range:"15–20",
+  instructions:"You will hear an interview in which two young entrepreneurs &ndash; Chloe Price, who sells skincare products online, and Martin Moore, who is a distributor of snack foods &ndash; are talking about their work. For questions 15-20, choose the answer which fits best according to what you hear.",
+  questions:[
+    {n:15, q:"Chloe attributes her success as an entrepreneur to her", opts:["exposure to unconventional business concepts.","willingness to take risks.","ability to benefit from experience.","natural flair for money management."]},
+    {n:16, q:"Chloe thinks the greatest benefit new technology has brought her is in", opts:["being able to promote her products through friends.","encouraging interaction with consumers.","reducing her ongoing business expenditure.","enabling her to manage her time more effectively."]},
+    {n:17, q:"What does Martin say about finding work in the food industry?", opts:["It was a long-held ambition.","It was something he soon regretted.","It happened by chance.","It followed naturally from his studies."]},
+    {n:18, q:"Martin's choice of product to distribute was based on his belief that", opts:["it was a quality item.","it was effectively marketed.","it was part of a well-established brand.","it was endorsed by famous people."]},
+    {n:19, q:"Martin's advice to prospective entrepreneurs is to", opts:["spend time attending motivational talks.","research opportunities thoroughly online.","conduct regular email surveys.","establish contacts with those in the same field."]},
+    {n:20, q:"Both Chloe and Martin have been surprised by the importance in their work of", opts:["collaborative decision-making.","paying attention to detail.","securing sound financial backing.","a total commitment to the enterprise."]}
+  ]
+},
+{
+  id:4, label:"Part 4", range:"21–30", type:"double-match",
+  instructions:"You will hear five people talking about taking part in a long-distance cycling event. For Task 1, choose from the list the reason each speaker gives for taking part in the event. For Task 2, choose from the list what problem each speaker had with the event.",
+  task1:{heading:"Task One — reason for taking part", options:[
+    {letter:"A", text:"to please a family member"},{letter:"B", text:"to meet like-minded people"},{letter:"C", text:"to test level of fitness"},{letter:"D", text:"to win a prize"},
+    {letter:"E", text:"to encourage a colleague"},{letter:"F", text:"to gain a sense of achievement"},{letter:"G", text:"to raise money for charity"},{letter:"H", text:"to strengthen a relationship"}
+  ], startN:21},
+  task2:{heading:"Task Two — problem with the event", options:[
+    {letter:"A", text:"mechanical failures"},{letter:"B", text:"dangerous motorists"},{letter:"C", text:"unsuitable clothing"},{letter:"D", text:"irresponsible competitors"},
+    {letter:"E", text:"muscle pain"},{letter:"F", text:"lack of planning"},{letter:"G", text:"an administrative error"},{letter:"H", text:"physical exhaustion"}
+  ], startN:26},
+  speakers:["Speaker 1","Speaker 2","Speaker 3","Speaker 4","Speaker 5"]
+}
+];
+
+/* =================================================================
+   CONFIG — edita esto al desplegar tu propia copia
+   ================================================================= */
+var CONFIG = {
+  // Pega aquí la URL de tu Web App de Google Apps Script (ver guía de despliegue).
+  // Mientras esté vacío, la plataforma funciona igual pero solo guarda en este navegador.
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzSEd14qnYth3IzY-ZiAGOnHPJQJkOyunsCv97Q8VJDiG2ba0rA4paDGdab8TTg2ZLn/exec",
+  // Hash SHA-256 de la contraseña de acceso. El valor de fábrica corresponde a "CAEmock2026".
+  // Cámbialo por el hash de tu propia contraseña (la guía explica cómo generarlo).
+  ACCESS_PASSWORD_HASH: "6a768d406d58fb73bb1677d9290979dc5974cc14772b00a9c5c5ff4506014b1e"
+};
+
+/* =================================================================
+   AUTH — pantalla de acceso (contraseña + código de estudiante)
+   ================================================================= */
+var AUTH_KEY = "cae_mock1_auth_v1";
+var auth = null;
+function loadAuth(){ try{ var r = localStorage.getItem(AUTH_KEY); return r ? JSON.parse(r) : null; }catch(e){ return null; } }
+function saveAuth(a){ try{ localStorage.setItem(AUTH_KEY, JSON.stringify(a)); }catch(e){} }
+function clearAuth(){ try{ localStorage.removeItem(AUTH_KEY); }catch(e){} }
+
+async function sha256Hex(str){
+  var enc = new TextEncoder().encode(str);
+  var buf = await crypto.subtle.digest("SHA-256", enc);
+  return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,"0"); }).join("");
+}
+
+async function submitGate(){
+  var passEl = document.getElementById("gate-password");
+  var codeEl = document.getElementById("gate-code");
+  var courseEl = document.getElementById("gate-course");
+  var errEl = document.getElementById("gate-error");
+  errEl.style.display = "none";
+  var code = codeEl.value.trim();
+  var course = courseEl.value.trim();
+  if(!code){ errEl.textContent = "Ingresa tu código de estudiante."; errEl.style.display = "block"; return; }
+  if(CONFIG.ACCESS_PASSWORD_HASH){
+    var hash = await sha256Hex(passEl.value || "");
+    if(hash !== CONFIG.ACCESS_PASSWORD_HASH){
+      errEl.textContent = "Contraseña incorrecta.";
+      errEl.style.display = "block";
+      return;
+    }
+  }
+  auth = {code:code, course:course};
+  saveAuth(auth);
+  bootAfterAuth();
+}
+function logoutGate(){
+  if(syncDirty) { try{ pushToServer(); }catch(e){} }
+  clearAuth();
+  location.reload();
+}
+function bootAfterAuth(){
+  STORAGE_KEY = scopedKey();
+  state = loadState();
+  pullFromServer().finally(function(){
+    go("start");
+    startAutoSync();
+  });
+}
+
+/* =================================================================
+   STATE
+   ================================================================= */
+var STORAGE_KEY = "cae_mock1_v1";
+var state = {answers:{}, timers:{}, current:{reading:1, writing:1, listening:1}};
+function scopedKey(){
+  return "cae_mock1_v1__" + (auth && auth.course ? auth.course : "na") + "__" + (auth && auth.code ? auth.code : "anon");
+}
+function loadState(){
+  try{
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return {answers:{}, timers:{}, current:{reading:1, writing:1, listening:1}};
+}
+function saveState(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+  syncDirty = true;
+}
+if(!state.answers) state.answers = {};
+if(!state.timers) state.timers = {};
+if(!state.current) state.current = {reading:1, writing:1, listening:1};
+
+var DURATIONS = {reading:90*60, writing:90*60, listening:40*60};
+var timerHandles = {};
+
+/* =================================================================
+   SYNC — envía y recupera respuestas desde Google Sheets (Apps Script)
+   ================================================================= */
+var syncDirty = false;
+var syncTimer = null;
+var syncBusy = false;
+
+function startAutoSync(){
+  if(syncTimer) clearInterval(syncTimer);
+  syncTimer = setInterval(function(){ if(syncDirty && !syncBusy) pushToServer(); }, 15000);
+  window.addEventListener("beforeunload", function(){ if(syncDirty) pushToServer(); });
+}
+
+function setSyncStatus(s){
+  var map = {
+    idle: "—",
+    syncing: "Sincronizando…",
+    ok: "Guardado en la nube ✓",
+    error: "Error al guardar",
+    offline: "Sin conexión — reintentará",
+    off: "Sincronización no configurada"
+  };
+  document.querySelectorAll(".sync-indicator").forEach(function(el){
+    el.textContent = map[s] || s;
+    el.classList.toggle("low", s === "error" || s === "offline");
+  });
+}
+
+async function pullFromServer(){
+  if(!CONFIG.APPS_SCRIPT_URL || !auth || !auth.code){ setSyncStatus(CONFIG.APPS_SCRIPT_URL ? "idle" : "off"); return; }
+  // Solo se hidrata si este navegador todavía no tiene respuestas propias,
+  // para nunca sobrescribir un intento que ya está en curso en este dispositivo.
+  if(Object.keys(state.answers).length > 0){ setSyncStatus("idle"); return; }
+  try{
+    var url = CONFIG.APPS_SCRIPT_URL + "?action=get&code=" + encodeURIComponent(auth.code) + "&course=" + encodeURIComponent(auth.course || "");
+    var res = await fetch(url);
+    var j = await res.json();
+    if(j && j.found && j.row){
+      var answers = {};
+      Object.keys(j.row).forEach(function(k){
+        if(k === "codigo" || k === "curso" || k === "ultima_actualizacion") return;
+        if(j.row[k] !== "" && j.row[k] !== null && j.row[k] !== undefined) answers[k] = j.row[k];
+      });
+      state.answers = answers;
+      saveState();
+      syncDirty = false;
+    }
+    setSyncStatus("idle");
+  }catch(err){ setSyncStatus("offline"); }
+}
+
+async function pushToServer(manual){
+  if(!CONFIG.APPS_SCRIPT_URL){ if(manual) setSyncStatus("off"); return; }
+  if(!auth || !auth.code) return;
+  syncBusy = true;
+  syncDirty = false;
+  setSyncStatus("syncing");
+  try{
+    var res = await fetch(CONFIG.APPS_SCRIPT_URL, {
+      method: "POST",
+      headers: {"Content-Type": "text/plain;charset=utf-8"},
+      body: JSON.stringify({code: auth.code, course: auth.course || "", answers: state.answers})
+    });
+    var j = await res.json().catch(function(){ return {ok:true}; });
+    setSyncStatus(j && j.ok ? "ok" : "error");
+  }catch(err){
+    syncDirty = true;
+    setSyncStatus("offline");
+  }
+  syncBusy = false;
+}
+
+/* =================================================================
+   NAV
+   ================================================================= */
+function go(viewName){
+  if(syncDirty && !syncBusy) pushToServer();
+  document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
+  document.getElementById("view-"+viewName).classList.add("active");
+  window.scrollTo(0,0);
+  Object.keys(timerHandles).forEach(function(k){ clearInterval(timerHandles[k]); });
+  if(viewName === "menu") renderMenu();
+  if(viewName === "reading"){ ensureTimerStarted("reading"); renderReadingTabs(); renderReadingPart(); tickTimer("reading"); }
+  if(viewName === "writing"){ ensureTimerStarted("writing"); renderWritingTabs(); renderWritingPart(); tickTimer("writing"); }
+  if(viewName === "listening"){ ensureTimerStarted("listening"); renderListeningTabs(); renderListeningPart(); tickTimer("listening"); }
+  if(viewName === "summary") renderSummary();
+}
+
+/* =================================================================
+   TIMERS
+   ================================================================= */
+function ensureTimerStarted(section){
+  if(!state.timers[section] || !state.timers[section].start){
+    state.timers[section] = {start: Date.now(), duration: DURATIONS[section]};
+    saveState();
+  }
+}
+function resetTimer(section){
+  state.timers[section] = {start: Date.now(), duration: DURATIONS[section]};
+  saveState();
+  tickTimer(section);
+}
+function tickTimer(section){
+  clearInterval(timerHandles[section]);
+  function update(){
+    var t = state.timers[section];
+    var remaining = t.duration - Math.floor((Date.now()-t.start)/1000);
+    if(remaining < 0) remaining = 0;
+    var mm = Math.floor(remaining/60), ss = remaining%60;
+    var el = document.getElementById("timer-"+section);
+    if(el){
+      el.textContent = (mm<10?"0":"")+mm+":"+(ss<10?"0":"")+ss;
+      el.classList.toggle("low", remaining <= 300);
+    }
+  }
+  update();
+  timerHandles[section] = setInterval(update, 1000);
+}
+
+/* =================================================================
+   HELPERS
+   ================================================================= */
+function esc(s){ return (s+"").replace(/&(?!amp;|lsquo;|rsquo;|ldquo;|rdquo;|ndash;|hellip;|middot;)/g,"&amp;"); }
+
+function renderPassageHTML(raw, opts){
+  opts = opts || {};
+  var html = raw.split("<P>").map(function(p){ return "<p>"+p+"</p>"; }).join("");
+  html = html.replace(/\{\{(\d+)\}\}/g, function(_, num){
+    var val = state.answers["r"+num] || "";
+    var wide = opts.wide ? " wide" : "";
+    return '<sup class="gapnum">('+num+')</sup><input type="text" class="blank-input'+wide+'" data-key="r'+num+'" value="'+val.replace(/"/g,"&quot;")+'" autocomplete="off" spellcheck="false">';
+  });
+  return html;
+}
+
+function letterOf(i){ return String.fromCharCode(65+i); }
+
+function mcqBlock(qnum, qtext, opts, keyPrefix){
+  var key = (keyPrefix||"r")+qnum;
+  var cur = state.answers[key];
+  var rows = opts.map(function(o,i){
+    var L = letterOf(i);
+    var checked = cur === L ? "checked" : "";
+    return '<label class="opt-row"><input type="radio" name="'+key+'" value="'+L+'" data-key="'+key+'" '+checked+'><span class="letter">'+L+'</span><span>'+o+'</span></label>';
+  }).join("");
+  return '<div class="qblock" id="q-'+qnum+'"><div class="qtext"><span class="qnum">'+qnum+'</span>'+(qtext?qtext:"")+'</div><div class="opts">'+rows+'</div></div>';
+}
+
+function selectBlock(qnum, qtext, letters, keyPrefix){
+  var key = (keyPrefix||"r")+qnum;
+  var cur = state.answers[key] || "";
+  var opts = '<option value="">&mdash;</option>' + letters.map(function(L){
+    return '<option value="'+L+'" '+(cur===L?"selected":"")+'>'+L+'</option>';
+  }).join("");
+  return '<div class="match-row"><span class="qnum tx-key" style="margin-bottom:0;">'+qnum+'</span><span class="mtext">'+qtext+'</span><select class="select-inline" data-key="'+key+'">'+opts+'</select></div>';
+}
+
+function countWords(text){
+  var t = (text||"").trim();
+  if(!t) return 0;
+  return t.split(/\s+/).length;
+}
+
+/* =================================================================
+   READING RENDER
+   ================================================================= */
+function readingBadge(part){
+  var answered = 0, total = 0;
+  if(part.type==="mcq-cloze" || part.type==="mcq-reading"){
+    part.questions.forEach(function(q){ total++; if(state.answers["r"+q.n]) answered++; });
+  } else if(part.type==="open-cloze" || part.type==="word-formation"){
+    part.blanks.forEach(function(n){ total++; if(state.answers["r"+n]) answered++; });
+  } else if(part.type==="key-transform"){
+    part.items.forEach(function(it){ total++; if(state.answers["r"+it.n]) answered++; });
+  } else if(part.type==="multi-match-select"){
+    part.questions.forEach(function(q){ total++; if(state.answers["r"+q.n]) answered++; });
+  } else if(part.type==="gapped-text"){
+    part.gaps.forEach(function(n){ total++; if(state.answers["r"+n]) answered++; });
+  }
+  return {answered:answered, total:total};
+}
+
+function renderReadingTabs(){
+  var html = READING_PARTS.map(function(p){
+    var b = readingBadge(p);
+    var active = state.current.reading === p.id ? "active" : "";
+    var ans = b.answered>0 ? "answered" : "";
+    return '<button class="tab-btn '+active+' '+ans+'" onclick="setReadingPart('+p.id+')">'+p.label+'<span class="cnt">'+b.answered+'/'+b.total+'</span></button>';
+  }).join("");
+  document.getElementById("reading-tabs").innerHTML = html;
+}
+function setReadingPart(id){ state.current.reading = id; saveState(); renderReadingTabs(); renderReadingPart(); }
+function shiftPart(section, dir){
+  var arr = section==="reading" ? READING_PARTS : (section==="writing" ? [1,2] : LISTENING_PARTS);
+  var maxId = section==="reading" ? 8 : (section==="writing" ? 2 : 4);
+  var cur = state.current[section] + dir;
+  if(cur < 1) cur = 1;
+  if(cur > maxId) cur = maxId;
+  state.current[section] = cur;
+  saveState();
+  if(section==="reading"){ renderReadingTabs(); renderReadingPart(); }
+  if(section==="writing"){ renderWritingTabs(); renderWritingPart(); }
+  if(section==="listening"){ renderListeningTabs(); renderListeningPart(); }
+}
+
+function renderReadingPart(){
+  var part = READING_PARTS.find(function(p){ return p.id === state.current.reading; });
+  var html = '<div class="part-heading"><h2>'+part.label+'</h2><span class="qrange">Questions '+part.range+'</span></div>';
+  html += '<div class="instructions">'+part.instructions+'</div>';
+
+  if(part.type==="mcq-cloze"){
+    html += '<div class="passage-title">'+part.title+'</div>';
+    html += '<div class="passage">'+renderPassageStatic(part.passage)+'</div>';
+    html += part.questions.map(function(q){ return mcqBlock(q.n, "", q.opts); }).join("");
+  }
+  else if(part.type==="open-cloze"){
+    html += '<div class="passage-title">'+part.title+'</div>';
+    html += '<div class="passage">'+renderPassageHTML(part.passage)+'</div>';
+  }
+  else if(part.type==="word-formation"){
+    html += '<div class="passage-title">'+part.title+'</div>';
+    html += '<div class="passage">'+part.paragraphs.map(function(pg){
+      var t = renderPassageHTML(pg.text);
+      return '<p>'+t+'</p><div class="prompt-word">'+pg.prompt+'</div>';
+    }).join("")+'</div>';
+  }
+  else if(part.type==="key-transform"){
+    html += part.items.map(function(it){
+      var val = state.answers["r"+it.n] || "";
+      return '<div class="tx-item" id="q-'+it.n+'"><div class="tx-orig"><span class="qnum">'+it.n+'</span>'+it.s1+'</div><div class="tx-key">'+it.key+'</div><div class="tx-line">'+it.pre+' <input type="text" class="blank-input wide" data-key="r'+it.n+'" value="'+val.replace(/"/g,"&quot;")+'" autocomplete="off" spellcheck="false"> '+it.post+'</div></div>';
+    }).join("");
+  }
+  else if(part.type==="mcq-reading"){
+    html += '<div class="passage-title">'+part.title+'</div>';
+    html += '<div class="passage">'+renderPassageStatic(part.passage)+'</div>';
+    html += part.questions.map(function(q){ return mcqBlock(q.n, q.q, q.opts); }).join("");
+  }
+  else if(part.type==="multi-match-select"){
+    html += '<div class="passage-title">'+part.title+'</div>';
+    if(part.sub) html += '<div class="passage-sub">'+part.sub+'</div>';
+    html += '<div class="expert-grid">'+part.experts.map(function(e){
+      return '<div class="expert-card"><span class="expert-letter">'+(e.name||e.letter)+'</span><p>'+e.text+'</p></div>';
+    }).join("")+'</div>';
+    html += '<h4 style="font-family:var(--sans);font-size:14px;color:var(--ink-soft);margin-bottom:10px;">'+part.matchHeading+'</h4>';
+    html += part.questions.map(function(q){ return selectBlock(q.n, q.q, part.matchLetters); }).join("");
+  }
+  else if(part.type==="gapped-text"){
+    html += '<div class="passage-title">'+part.title+'</div>';
+    html += '<div class="passage-sub">'+part.sub+'</div>';
+    html += '<div class="passage">'+part.segments.map(function(seg){
+      if(seg.indexOf("GAP")===0){
+        var n = seg.replace("GAP","");
+        var val = state.answers["r"+n] || "";
+        var opts = '<option value="">&mdash; elige un párrafo &mdash;</option>' + part.options.map(function(o){ return '<option value="'+o.letter+'" '+(val===o.letter?"selected":"")+'>'+o.letter+'</option>'; }).join("");
+        return '<div class="gap-para" id="q-'+n+'"><span class="gaplabel">'+n+'</span><select class="select-inline" data-key="r'+n+'">'+opts+'</select></div>';
+      }
+      return '<p>'+seg+'</p>';
+    }).join("")+'</div>';
+    html += '<div class="option-bank"><h4>Párrafos A&ndash;G</h4><div class="bank-grid">'+part.options.map(function(o){
+      return '<div class="bank-item"><span class="lt">'+o.letter+'</span>'+o.text+'</div>';
+    }).join("")+'</div></div>';
+  }
+
+  document.getElementById("reading-content").innerHTML = html;
+  document.getElementById("reading-prev").disabled = part.id===1;
+  document.getElementById("reading-next").textContent = part.id===8 ? "Finalizar sección →" : "Siguiente parte →";
+  document.getElementById("reading-next").onclick = part.id===8 ? function(){ go("menu"); } : function(){ shiftPart("reading",1); };
+}
+
+function renderPassageStatic(raw){
+  return raw.split("<P>").map(function(p){ return "<p>"+p+"</p>"; }).join("");
+}
+
+/* =================================================================
+   WRITING RENDER
+   ================================================================= */
+function writingBadge(n){
+  if(n===1){ return state.answers.w1_text && countWords(state.answers.w1_text)>0 ? 1 : 0; }
+  return state.answers.w2_text && countWords(state.answers.w2_text)>0 ? 1 : 0;
+}
+function renderWritingTabs(){
+  var html = [1,2].map(function(n){
+    var active = state.current.writing === n ? "active" : "";
+    var ans = writingBadge(n) ? "answered" : "";
+    var label = n===1 ? "Part 1 (obligatoria)" : "Part 2 (elige 1 de 3)";
+    return '<button class="tab-btn '+active+' '+ans+'" onclick="setWritingPart('+n+')">'+label+'<span class="cnt">'+writingBadge(n)+'/1</span></button>';
+  }).join("");
+  document.getElementById("writing-tabs").innerHTML = html;
+}
+function setWritingPart(n){ state.current.writing = n; saveState(); renderWritingTabs(); renderWritingPart(); }
+
+function wcClass(n){ if(n===0) return ""; if(n<220) return "low"; if(n>260) return "high"; return "ok"; }
+
+function renderWritingPart(){
+  var html = "";
+  if(state.current.writing === 1){
+    var p = WRITING_PART1;
+    var text = state.answers.w1_text || "";
+    html += '<div class="part-heading"><h2>Part 1</h2><span class="qrange">220&ndash;260 words</span></div>';
+    html += '<div class="task-card"><div class="task-meta">Question 1 &middot; Essay &middot; Obligatoria</div>';
+    html += '<p>'+p.prompt+'</p>';
+    html += '<div class="notes-box"><span class="nb-title">Areas affected by global tourism</span><ul>'+p.areas.map(function(a){return '<li>'+a+'</li>';}).join("")+'</ul></div>';
+    html += '<div class="quote-box"><p style="font-style:normal;font-weight:600;font-style:normal;">Some opinions expressed in the documentary:</p>'+p.opinions.map(function(o){return '<p>'+o+'</p>';}).join("")+'</div>';
+    html += '<p>'+p.task+'</p><p>'+p.extra+'</p></div>';
+    html += '<textarea class="essay" data-key="w1_text" placeholder="Escribe tu redacción aquí&hellip;">'+text+'</textarea>';
+    html += '<div class="wordcount"><span>Palabras escritas</span><span class="wc-num '+wcClass(countWords(text))+'">'+countWords(text)+' / 220&ndash;260</span></div>';
+  } else {
+    var choice = state.answers.w2_choice;
+    html += '<div class="part-heading"><h2>Part 2</h2><span class="qrange">Elige 1 &middot; 220&ndash;260 words</span></div>';
+    html += '<div class="instructions">Answer <b>one</b> of the following three tasks. Write 220&ndash;260 words in an appropriate style.</div>';
+    html += WRITING_PART2.map(function(q){
+      var sel = choice === q.n ? "selected" : "";
+      return '<div class="task-choice '+sel+'" onclick="chooseWritingTask('+q.n+')"><div class="tc-head"><span class="tc-num">Question '+q.n+'</span><span>&middot; '+q.kind+'</span></div><p style="margin-bottom:6px;">'+q.prompt+'</p><p style="margin-bottom:0;">'+q.write+'</p></div>';
+    }).join("");
+    if(choice){
+      var text2 = state.answers.w2_text || "";
+      html += '<textarea class="essay" data-key="w2_text" placeholder="Escribe tu respuesta aquí&hellip;">'+text2+'</textarea>';
+      html += '<div class="wordcount"><span>Palabras escritas</span><span class="wc-num '+wcClass(countWords(text2))+'">'+countWords(text2)+' / 220&ndash;260</span></div>';
+    }
+  }
+  document.getElementById("writing-content").innerHTML = html;
+}
+function chooseWritingTask(n){
+  state.answers.w2_choice = n;
+  saveState();
+  renderWritingPart();
+  renderWritingTabs();
+}
+
+/* =================================================================
+   LISTENING RENDER
+   ================================================================= */
+function listeningBadge(part){
+  var answered=0, total=0;
+  if(part.id===1){
+    part.extracts.forEach(function(ex){ ex.questions.forEach(function(q){ total++; if(state.answers["l"+q.n]) answered++; }); });
+  } else if(part.id===2){
+    part.sentences.forEach(function(s){ total++; if(state.answers["l"+s.n]) answered++; });
+  } else if(part.id===3){
+    part.questions.forEach(function(q){ total++; if(state.answers["l"+q.n]) answered++; });
+  } else if(part.id===4){
+    for(var i=0;i<5;i++){ total++; if(state.answers["l"+(part.task1.startN+i)]) answered++; }
+    for(var j=0;j<5;j++){ total++; if(state.answers["l"+(part.task2.startN+j)]) answered++; }
+  }
+  return {answered:answered, total:total};
+}
+function renderListeningTabs(){
+  var html = LISTENING_PARTS.map(function(p){
+    var b = listeningBadge(p);
+    var active = state.current.listening === p.id ? "active" : "";
+    var ans = b.answered>0 ? "answered" : "";
+    return '<button class="tab-btn '+active+' '+ans+'" onclick="setListeningPart('+p.id+')">'+p.label+'<span class="cnt">'+b.answered+'/'+b.total+'</span></button>';
+  }).join("");
+  document.getElementById("listening-tabs").innerHTML = html;
+}
+function setListeningPart(id){ state.current.listening = id; saveState(); renderListeningTabs(); renderListeningPart(); }
+
+function renderListeningPart(){
+  var part = LISTENING_PARTS.find(function(p){ return p.id === state.current.listening; });
+  var html = '<div class="part-heading"><h2>'+part.label+'</h2><span class="qrange">Questions '+part.range+'</span></div>';
+  html += '<div class="instructions">'+part.instructions+'</div>';
+
+  if(part.id===1){
+    html += part.extracts.map(function(ex){
+      var h = '<h3 style="font-size:15px;font-family:var(--sans);color:var(--accent-strong);margin-bottom:4px;">'+ex.name+'</h3>';
+      h += '<p style="color:var(--ink-soft);font-size:14.5px;margin-bottom:14px;">'+ex.context+'</p>';
+      h += ex.questions.map(function(q){ return mcqBlock(q.n, q.q, q.opts, "l"); }).join("");
+      return h;
+    }).join("");
+  }
+  else if(part.id===2){
+    html += '<div class="passage-title">'+part.title+'</div>';
+    html += '<div class="passage">'+part.sentences.map(function(s){
+      var val = state.answers["l"+s.n] || "";
+      var t = s.text.replace(/\{\{(\d+)\}\}/, function(_, num){
+        return '<sup class="gapnum">('+num+')</sup><input type="text" class="blank-input" data-key="l'+num+'" value="'+val.replace(/"/g,"&quot;")+'" autocomplete="off" spellcheck="false">';
+      });
+      return '<p id="q-l'+s.n+'">'+t+'</p>';
+    }).join("")+'</div>';
+  }
+  else if(part.id===3){
+    html += part.questions.map(function(q){ return mcqBlock(q.n, q.q, q.opts, "l"); }).join("");
+  }
+  else if(part.id===4){
+    html += '<h3 style="font-size:15px;font-family:var(--sans);color:var(--accent-strong);margin:6px 0 8px;">'+part.task1.heading+'</h3>';
+    html += '<div class="option-bank" style="margin-top:0;"><div class="bank-grid">'+part.task1.options.map(function(o){ return '<div class="bank-item"><span class="lt">'+o.letter+'</span>'+o.text+'</div>'; }).join("")+'</div></div>';
+    html += '<div style="margin-top:16px;">'+part.speakers.map(function(sp,i){
+      var n = part.task1.startN + i;
+      return selectBlock(n, sp, part.task1.options.map(function(o){return o.letter;}), "l");
+    }).join("")+'</div>';
+
+    html += '<h3 style="font-size:15px;font-family:var(--sans);color:var(--accent-strong);margin:28px 0 8px;">'+part.task2.heading+'</h3>';
+    html += '<div class="option-bank" style="margin-top:0;"><div class="bank-grid">'+part.task2.options.map(function(o){ return '<div class="bank-item"><span class="lt">'+o.letter+'</span>'+o.text+'</div>'; }).join("")+'</div></div>';
+    html += '<div style="margin-top:16px;">'+part.speakers.map(function(sp,i){
+      var n = part.task2.startN + i;
+      return selectBlock(n, sp, part.task2.options.map(function(o){return o.letter;}), "l");
+    }).join("")+'</div>';
+  }
+
+  document.getElementById("listening-content").innerHTML = html;
+}
+
+/* =================================================================
+   MENU
+   ================================================================= */
+function sectionStatus(name){
+  var answered=0, total=0;
+  if(name==="reading"){
+    READING_PARTS.forEach(function(p){ var b=readingBadge(p); answered+=b.answered; total+=b.total; });
+  } else if(name==="writing"){
+    total = 2; answered = writingBadge(1) + writingBadge(2);
+  } else if(name==="listening"){
+    LISTENING_PARTS.forEach(function(p){ var b=listeningBadge(p); answered+=b.answered; total+=b.total; });
+  }
+  return {answered:answered, total:total};
+}
+function renderMenu(){
+  var sections = [
+    {key:"reading", title:"Reading & Use of English", meta:"8 partes &middot; 56 preguntas &middot; 90 min", desc:"Textos con huecos, transformaciones y comprensión lectora, idénticos al examen original.", view:"reading"},
+    {key:"writing", title:"Writing", meta:"2 tareas &middot; 90 min", desc:"Redacción obligatoria (Part 1) y una tarea a elección entre reseña, carta o propuesta (Part 2).", view:"writing"},
+    {key:"listening", title:"Listening", meta:"4 partes &middot; 30 preguntas &middot; ~40 min", desc:"Preguntas exactas del examen. Piloto sin audio por ahora.", view:"listening"}
+  ];
+  var html = sections.map(function(s){
+    var st = sectionStatus(s.key);
+    var tag = st.answered===0 ? '<span class="tag tag-todo">Sin empezar</span>' : (st.answered>=st.total ? '<span class="tag tag-done">Completa</span>' : '<span class="tag tag-progress">En progreso</span>');
+    var pct = st.total ? Math.round(100*st.answered/st.total) : 0;
+    return '<div class="card">'+tag+'<h3>'+s.title+'</h3><div class="meta">'+s.meta+'</div><p class="desc">'+s.desc+'</p>'+
+      '<div class="progress-bar"><div style="width:'+pct+'%;"></div></div>'+
+      '<div style="font-family:var(--mono);font-size:12px;color:var(--ink-faint);">'+st.answered+' / '+st.total+' respondidas</div>'+
+      '<button class="btn btn-primary" onclick="go(\''+s.view+'\')">'+(st.answered>0 ? "Continuar" : "Comenzar")+' &rarr;</button></div>';
+  }).join("");
+  document.getElementById("menu-cards").innerHTML = html;
+  var sessionEl = document.getElementById("session-info");
+  if(sessionEl && auth){
+    sessionEl.textContent = "Código: "+auth.code+(auth.course ? " · "+auth.course : "")+" — puedes hacerlas en cualquier orden y retomar donde quedaste.";
+  }
+  setSyncStatus(CONFIG.APPS_SCRIPT_URL ? (syncDirty ? "syncing" : "idle") : "off");
+}
+
+/* =================================================================
+   SUMMARY
+   ================================================================= */
+function renderSummary(){
+  var html = "";
+
+  // Reading
+  html += '<div class="summary-section"><h2>Reading &amp; Use of English</h2><div class="scroll-x"><table class="summary-table"><thead><tr><th>Pregunta</th><th>Tu respuesta</th></tr></thead><tbody>';
+  READING_PARTS.forEach(function(part){
+    if(part.type==="mcq-cloze" || part.type==="mcq-reading"){
+      part.questions.forEach(function(q){ html += summaryRow(q.n, state.answers["r"+q.n]); });
+    } else if(part.type==="open-cloze" || part.type==="word-formation"){
+      part.blanks.forEach(function(n){ html += summaryRow(n, state.answers["r"+n]); });
+    } else if(part.type==="key-transform"){
+      part.items.forEach(function(it){ html += summaryRow(it.n, state.answers["r"+it.n]); });
+    } else if(part.type==="multi-match-select"){
+      part.questions.forEach(function(q){ html += summaryRow(q.n, state.answers["r"+q.n]); });
+    } else if(part.type==="gapped-text"){
+      part.gaps.forEach(function(n){ html += summaryRow(n, state.answers["r"+n]); });
+    }
+  });
+  html += '</tbody></table></div></div>';
+
+  // Writing
+  html += '<div class="summary-section"><h2>Writing</h2>';
+  html += '<h4 style="font-family:var(--sans);font-size:13px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;">Part 1 &middot; Essay</h4>';
+  html += state.answers.w1_text ? '<div class="summary-essay">'+esc(state.answers.w1_text)+'</div><div style="font-family:var(--mono);font-size:12px;color:var(--ink-faint);margin-top:6px;">'+countWords(state.answers.w1_text)+' palabras</div>' : '<p class="ans-empty">Sin responder.</p>';
+  html += '<h4 style="font-family:var(--sans);font-size:13px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;margin-top:18px;">Part 2 &middot; '+(state.answers.w2_choice ? "Question "+state.answers.w2_choice : "Sin elegir tarea")+'</h4>';
+  html += state.answers.w2_text ? '<div class="summary-essay">'+esc(state.answers.w2_text)+'</div><div style="font-family:var(--mono);font-size:12px;color:var(--ink-faint);margin-top:6px;">'+countWords(state.answers.w2_text)+' palabras</div>' : '<p class="ans-empty">Sin responder.</p>';
+  html += '</div>';
+
+  // Listening
+  html += '<div class="summary-section"><h2>Listening</h2><div class="scroll-x"><table class="summary-table"><thead><tr><th>Pregunta</th><th>Tu respuesta</th></tr></thead><tbody>';
+  for(var n=1;n<=30;n++){ html += summaryRow(n, state.answers["l"+n]); }
+  html += '</tbody></table></div></div>';
+
+  document.getElementById("summary-body").innerHTML = html;
+}
+function summaryRow(n, val){
+  return '<tr><td style="font-family:var(--mono);">'+n+'</td><td>'+(val ? esc(val) : '<span class="ans-empty">sin responder</span>')+'</td></tr>';
+}
+
+/* =================================================================
+   EVENTS
+   ================================================================= */
+document.getElementById("app").addEventListener("input", function(e){
+  var el = e.target;
+  if(el.matches("[data-key]") && (el.tagName==="INPUT" && el.type==="text" || el.tagName==="TEXTAREA")){
+    state.answers[el.dataset.key] = el.value;
+    saveState();
+    if(el.dataset.key==="w1_text" || el.dataset.key==="w2_text") renderWritingWordcountOnly();
+    updateAllTabs();
+  }
+});
+document.getElementById("app").addEventListener("change", function(e){
+  var el = e.target;
+  if(el.matches("[data-key]") && (el.type==="radio" || el.tagName==="SELECT")){
+    if(el.type==="radio" && !el.checked) return;
+    state.answers[el.dataset.key] = el.value;
+    saveState();
+    updateAllTabs();
+    // refresh opt-row highlighting for radios
+    if(el.type==="radio"){
+      var group = document.getElementsByName(el.name);
+      // handled by :has(input:checked) CSS
+    }
+  }
+});
+function renderWritingWordcountOnly(){
+  var wc = document.querySelector(".wordcount .wc-num");
+  if(!wc) return;
+  var key = state.current.writing===1 ? "w1_text" : "w2_text";
+  var n = countWords(state.answers[key]);
+  wc.textContent = n+" / 220–260";
+  wc.className = "wc-num "+wcClass(n);
+}
+function updateAllTabs(){
+  if(document.getElementById("view-reading").classList.contains("active")) renderReadingTabs();
+  if(document.getElementById("view-writing").classList.contains("active")) renderWritingTabs();
+  if(document.getElementById("view-listening").classList.contains("active")) renderListeningTabs();
+}
+
+/* =================================================================
+   BOOT
+   ================================================================= */
+(function boot(){
+  var existing = loadAuth();
+  if(existing && existing.code){
+    auth = existing;
+    bootAfterAuth();
+  }
+  // si no hay sesión guardada, la vista "gate" (activa por defecto) espera submitGate()
+})();
+</script>
+</body>
+</html>
