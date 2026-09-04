@@ -307,9 +307,6 @@ textarea.essay{
       <label class="gate-field">Tu código de estudiante
         <input type="text" id="gate-code" placeholder="p. ej. EST-014" autocomplete="off">
       </label>
-      <label class="gate-field">Curso / sección
-        <input type="text" id="gate-course" placeholder="p. ej. ING301-2026-2" autocomplete="off">
-      </label>
       <button class="btn btn-primary" onclick="submitGate()" style="justify-content:center; width:100%;">Entrar →</button>
     </div>
   </div>
@@ -319,7 +316,7 @@ textarea.essay{
 <div class="view" id="view-start">
   <div class="hero">
     <div class="hero-inner">
-      <div class="eyebrow">Practice platform &middot; pilot version</div>
+      <div class="eyebrow">Practice platform &middot; Version 1</div>
       <h1>C1 Advanced — Mock&nbsp;1</h1>
       <p class="sub">This practice test includes Reading and Use of English, Writing and Listening. It is designed to help you become familiar with the test format, task types and time limits.</p>
 
@@ -367,7 +364,6 @@ textarea.essay{
       </div>
       <div class="timer-block">
         <span class="sync-indicator">—</span>
-        <button class="back-link" onclick="resetTimer('reading')">reiniciar cronómetro</button>
         <div class="timer-display" id="timer-reading">90:00</div>
       </div>
     </div>
@@ -390,7 +386,6 @@ textarea.essay{
       </div>
       <div class="timer-block">
         <span class="sync-indicator">—</span>
-        <button class="back-link" onclick="resetTimer('writing')">reiniciar cronómetro</button>
         <div class="timer-display" id="timer-writing">90:00</div>
       </div>
     </div>
@@ -409,7 +404,6 @@ textarea.essay{
       </div>
       <div class="timer-block">
         <span class="sync-indicator">—</span>
-        <button class="back-link" onclick="resetTimer('listening')">reiniciar cronómetro</button>
         <div class="timer-display" id="timer-listening">40:00</div>
       </div>
     </div>
@@ -690,11 +684,10 @@ async function sha256Hex(str){
 async function submitGate(){
   var passEl = document.getElementById("gate-password");
   var codeEl = document.getElementById("gate-code");
-  var courseEl = document.getElementById("gate-course");
   var errEl = document.getElementById("gate-error");
   errEl.style.display = "none";
   var code = codeEl.value.trim();
-  var course = courseEl.value.trim();
+  var course = "";
   if(!code){ errEl.textContent = "Ingresa tu código de estudiante."; errEl.style.display = "block"; return; }
   if(CONFIG.ACCESS_PASSWORD_HASH){
     var hash = await sha256Hex(passEl.value || "");
@@ -824,6 +817,9 @@ async function pushToServer(manual){
    NAV
    ================================================================= */
 function go(viewName){
+  if((viewName==="reading"||viewName==="writing"||viewName==="listening") && state.timers[viewName] && state.timers[viewName].ended){
+    viewName = "menu";
+  }
   if(syncDirty && !syncBusy) pushToServer();
   document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
   document.getElementById("view-"+viewName).classList.add("active");
@@ -845,11 +841,6 @@ function ensureTimerStarted(section){
     saveState();
   }
 }
-function resetTimer(section){
-  state.timers[section] = {start: Date.now(), duration: DURATIONS[section]};
-  saveState();
-  tickTimer(section);
-}
 function tickTimer(section){
   clearInterval(timerHandles[section]);
   function update(){
@@ -862,9 +853,22 @@ function tickTimer(section){
       el.textContent = (mm<10?"0":"")+mm+":"+(ss<10?"0":"")+ss;
       el.classList.toggle("low", remaining <= 300);
     }
+    if(remaining <= 0 && !t.ended){
+      t.ended = true;
+      saveState();
+      clearInterval(timerHandles[section]);
+      timeUp(section);
+    }
   }
   update();
   timerHandles[section] = setInterval(update, 1000);
+}
+
+function timeUp(section){
+  // Se acabó el tiempo: se envían las respuestas automáticamente y se
+  // cierra el acceso a esta sección (no se puede seguir editando).
+  pushToServer(true);
+  go("menu");
 }
 
 /* =================================================================
@@ -1179,12 +1183,16 @@ function renderMenu(){
   ];
   var html = sections.map(function(s){
     var st = sectionStatus(s.key);
-    var tag = st.answered===0 ? '<span class="tag tag-todo">Sin empezar</span>' : (st.answered>=st.total ? '<span class="tag tag-done">Completa</span>' : '<span class="tag tag-progress">En progreso</span>');
+    var ended = !!(state.timers[s.key] && state.timers[s.key].ended);
+    var tag = ended ? '<span class="tag tag-done">Tiempo terminado</span>' : (st.answered===0 ? '<span class="tag tag-todo">Sin empezar</span>' : (st.answered>=st.total ? '<span class="tag tag-done">Completa</span>' : '<span class="tag tag-progress">En progreso</span>'));
     var pct = st.total ? Math.round(100*st.answered/st.total) : 0;
+    var btn = ended
+      ? '<button class="btn btn-primary" disabled style="opacity:.5;cursor:not-allowed;">Tiempo terminado</button>'
+      : '<button class="btn btn-primary" onclick="go(\''+s.view+'\')">'+(st.answered>0 ? "Continuar" : "Comenzar")+' &rarr;</button>';
     return '<div class="card">'+tag+'<h3>'+s.title+'</h3><div class="meta">'+s.meta+'</div><p class="desc">'+s.desc+'</p>'+
       '<div class="progress-bar"><div style="width:'+pct+'%;"></div></div>'+
       '<div style="font-family:var(--mono);font-size:12px;color:var(--ink-faint);">'+st.answered+' / '+st.total+' respondidas</div>'+
-      '<button class="btn btn-primary" onclick="go(\''+s.view+'\')">'+(st.answered>0 ? "Continuar" : "Comenzar")+' &rarr;</button></div>';
+      btn+'</div>';
   }).join("");
   document.getElementById("menu-cards").innerHTML = html;
   var sessionEl = document.getElementById("session-info");
@@ -1261,6 +1269,21 @@ document.getElementById("app").addEventListener("change", function(e){
       // handled by :has(input:checked) CSS
     }
   }
+});
+
+// Los campos de respuesta (huecos y redacciones) no aceptan texto pegado:
+// solo se puede escribir directamente o seleccionar entre las opciones dadas.
+// Esto no afecta a la pantalla de acceso (código/curso/contraseña).
+function isAnswerField(el){
+  return el && el.matches && el.matches("[data-key]") && (
+    (el.tagName === "INPUT" && el.type === "text") || el.tagName === "TEXTAREA"
+  );
+}
+document.getElementById("app").addEventListener("paste", function(e){
+  if(isAnswerField(e.target)) e.preventDefault();
+});
+document.getElementById("app").addEventListener("drop", function(e){
+  if(isAnswerField(e.target)) e.preventDefault();
 });
 function renderWritingWordcountOnly(){
   var wc = document.querySelector(".wordcount .wc-num");
