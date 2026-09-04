@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>C1 Advanced Practice</title>
+<title>C1 Advanced — Mock 1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
@@ -157,6 +157,12 @@ button{font-family:var(--sans);}
   border:1px solid var(--line-strong); background:var(--surface-2); border-radius:10px; padding:14px 16px;
   font-size:14px; color:var(--ink-soft); margin-bottom:24px;
 }
+.audio-player{
+  border:1px solid var(--line-strong); background:var(--surface); border-radius:10px; padding:14px 16px;
+  margin-bottom:20px;
+}
+.audio-player audio{width:100%; display:block;}
+.audio-player .audio-fallback{font-size:13px; color:var(--ink-faint); margin-top:6px;}
 .instructions{
   font-size:14.5px; color:var(--ink-soft); margin-bottom:22px; padding-bottom:18px; border-bottom:1px dashed var(--line-strong);
 }
@@ -313,21 +319,21 @@ textarea.essay{
 <div class="view" id="view-start">
   <div class="hero">
     <div class="hero-inner">
-      <div class="eyebrow">Plataforma de práctica &middot; piloto</div>
+      <div class="eyebrow">Practice platform &middot; pilot version</div>
       <h1>C1 Advanced — Mock&nbsp;1</h1>
-      <p class="sub">Réplica interactiva del examen que subiste: los mismos textos, huecos y preguntas de Reading &amp; Use of English, Writing y Listening, para practicar el formato y los tiempos.</p>
+      <p class="sub">This practice test includes Reading and Use of English, Writing and Listening. It is designed to help you become familiar with the test format, task types and time limits.</p>
 
       <div class="spec-grid">
-        <div class="spec-cell"><div class="n">90&nbsp;min</div><div class="l">Reading &amp; Use of English · 8 partes · 56 preguntas</div></div>
-        <div class="spec-cell"><div class="n">90&nbsp;min</div><div class="l">Writing · Part 1 obligatoria + 1 de 3 en Part 2</div></div>
-        <div class="spec-cell"><div class="n">~40&nbsp;min</div><div class="l">Listening · 4 partes · 30 preguntas</div></div>
+        <div class="spec-cell"><div class="n">90&nbsp;min</div><div class="l">Reading and Use of English · 8 parts · 56 questions</div></div>
+        <div class="spec-cell"><div class="n">90&nbsp;min</div><div class="l">Writing · Compulsory Part 1 + one task from Part 2</div></div>
+        <div class="spec-cell"><div class="n">~40&nbsp;min</div><div class="l">Listening · 4 parts · 30 questions</div></div>
       </div>
 
       <div class="note-box">
-        <b>Nota sobre este piloto:</b> tus respuestas se guardan en este navegador mientras avanzas, pero no se corrigen automáticamente (el PDF original no trae una hoja de respuestas). La sección de Listening muestra las preguntas exactas del examen, pero todavía no incluye el audio — es la primera versión de esa parte.
+        <b>Important information about this pilot:</b> your answers will be saved in this browser as you progress. They will not be marked automatically.
       </div>
 
-      <button class="btn btn-primary" onclick="go('menu')">Comenzar →</button>
+      <button class="btn btn-primary" onclick="go('menu')">Start test →</button>
     </div>
   </div>
 </div>
@@ -409,7 +415,7 @@ textarea.essay{
     </div>
     <div class="tabs-row" id="listening-tabs"></div>
     <div class="exam-main"><div class="exam-col">
-      <div class="banner">🎧 <b>Piloto sin audio todavía:</b> estas son las preguntas exactas del examen. Responde según lo que tú decidas practicar (o incorpora tu propio audio) — esta versión aún no reproduce sonido.</div>
+      <div class="audio-player"><audio controls preload="none"><source src="audio/listening.mp3" type="audio/mpeg">Your browser does not support embedded audio.</audio><div class="audio-fallback">🎧 Escucha el audio completo del Listening (las 4 partes) y responde a medida que avanzas por las pestañas de arriba.</div></div>
       <div id="listening-content"></div>
     </div></div>
   </div>
@@ -954,7 +960,7 @@ function renderReadingPart(){
 
   if(part.type==="mcq-cloze"){
     html += '<div class="passage-title">'+part.title+'</div>';
-    html += '<div class="passage">'+renderPassageStatic(part.passage)+'</div>';
+    html += '<div class="passage">'+renderPassageMarkers(part.passage)+'</div>';
     html += part.questions.map(function(q){ return mcqBlock(q.n, "", q.opts); }).join("");
   }
   else if(part.type==="open-cloze"){
@@ -1013,6 +1019,13 @@ function renderReadingPart(){
 
 function renderPassageStatic(raw){
   return raw.split("<P>").map(function(p){ return "<p>"+p+"</p>"; }).join("");
+}
+
+function renderPassageMarkers(raw){
+  var html = raw.split("<P>").map(function(p){ return "<p>"+p+"</p>"; }).join("");
+  return html.replace(/\{\{(\d+)\}\}/g, function(_, num){
+    return '<sup class="gapnum">('+num+')</sup>';
+  });
 }
 
 /* =================================================================
@@ -1162,7 +1175,7 @@ function renderMenu(){
   var sections = [
     {key:"reading", title:"Reading & Use of English", meta:"8 partes &middot; 56 preguntas &middot; 90 min", desc:"Textos con huecos, transformaciones y comprensión lectora, idénticos al examen original.", view:"reading"},
     {key:"writing", title:"Writing", meta:"2 tareas &middot; 90 min", desc:"Redacción obligatoria (Part 1) y una tarea a elección entre reseña, carta o propuesta (Part 2).", view:"writing"},
-    {key:"listening", title:"Listening", meta:"4 partes &middot; 30 preguntas &middot; ~40 min", desc:"Preguntas exactas del examen. Piloto sin audio por ahora.", view:"listening"}
+    {key:"listening", title:"Listening", meta:"4 partes &middot; 30 preguntas &middot; ~40 min", desc:"Preguntas exactas del examen, con el audio completo.", view:"listening"}
   ];
   var html = sections.map(function(s){
     var st = sectionStatus(s.key);
