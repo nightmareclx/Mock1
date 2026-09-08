@@ -163,6 +163,17 @@ button{font-family:var(--sans);}
 }
 .audio-player audio{width:100%; display:block;}
 .audio-player .audio-fallback{font-size:13px; color:var(--ink-faint); margin-top:6px;}
+.save-toast{
+  position:fixed; top:16px; right:16px; z-index:999; max-width:320px;
+  background:var(--surface); border:1px solid var(--line-strong); border-radius:10px;
+  padding:12px 16px; font-size:13.5px; line-height:1.4; color:var(--ink);
+  box-shadow:0 8px 24px rgba(0,0,0,.14);
+  opacity:0; transform:translateY(-10px); pointer-events:none;
+  transition:opacity .25s ease, transform .25s ease;
+}
+.save-toast.show{opacity:1; transform:translateY(0);}
+.save-toast.ok{border-color:var(--accent); color:var(--accent-strong);}
+.save-toast.err{border-color:var(--warn); color:var(--warn);}
 .instructions{
   font-size:14.5px; color:var(--ink-soft); margin-bottom:22px; padding-bottom:18px; border-bottom:1px dashed var(--line-strong);
 }
@@ -292,6 +303,8 @@ textarea.essay{
 <body>
 
 <div id="app">
+
+<div id="save-toast" class="save-toast" role="status" aria-live="polite"></div>
 
 <!-- ============ GATE ============ -->
 <div class="view active" id="view-gate">
@@ -769,6 +782,16 @@ function setSyncStatus(s){
   });
 }
 
+var toastTimer = null;
+function showToast(message, kind){
+  var el = document.getElementById("save-toast");
+  if(!el) return;
+  el.textContent = message;
+  el.className = "save-toast show" + (kind ? " "+kind : "");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ el.classList.remove("show"); }, 4500);
+}
+
 async function pullFromServer(){
   if(!CONFIG.APPS_SCRIPT_URL || !auth || !auth.code){ setSyncStatus(CONFIG.APPS_SCRIPT_URL ? "idle" : "off"); return; }
   // Solo se hidrata si este navegador todavía no tiene respuestas propias,
@@ -792,25 +815,38 @@ async function pullFromServer(){
   }catch(err){ setSyncStatus("offline"); }
 }
 
-async function pushToServer(manual){
-  if(!CONFIG.APPS_SCRIPT_URL){ if(manual) setSyncStatus("off"); return; }
-  if(!auth || !auth.code) return;
+async function pushToServer(manual, announce){
+  if(!CONFIG.APPS_SCRIPT_URL){ if(manual) setSyncStatus("off"); return false; }
+  if(!auth || !auth.code) return false;
   syncBusy = true;
   syncDirty = false;
   setSyncStatus("syncing");
+  var success = false;
+  var timeoutId = null;
   try{
+    var controller = ("AbortController" in window) ? new AbortController() : null;
+    if(controller) timeoutId = setTimeout(function(){ controller.abort(); }, 15000);
     var res = await fetch(CONFIG.APPS_SCRIPT_URL, {
       method: "POST",
       headers: {"Content-Type": "text/plain;charset=utf-8"},
-      body: JSON.stringify({code: auth.code, course: auth.course || "", answers: state.answers})
+      body: JSON.stringify({code: auth.code, course: auth.course || "", answers: state.answers}),
+      signal: controller ? controller.signal : undefined
     });
+    if(timeoutId) clearTimeout(timeoutId);
     var j = await res.json().catch(function(){ return {ok:true}; });
-    setSyncStatus(j && j.ok ? "ok" : "error");
+    success = !!(j && j.ok);
+    setSyncStatus(success ? "ok" : "error");
   }catch(err){
+    if(timeoutId) clearTimeout(timeoutId);
     syncDirty = true;
     setSyncStatus("offline");
   }
   syncBusy = false;
+  if(announce){
+    if(success) showToast("✓ Tu respuesta fue enviada y guardada con éxito.", "ok");
+    else showToast("No se pudo confirmar el envío todavía. Tu respuesta quedó guardada en este navegador y se reintentará sola.", "err");
+  }
+  return success;
 }
 
 /* =================================================================
@@ -867,7 +903,7 @@ function tickTimer(section){
 function timeUp(section){
   // Se acabó el tiempo: se envían las respuestas automáticamente y se
   // cierra el acceso a esta sección (no se puede seguir editando).
-  pushToServer(true);
+  pushToServer(true, true);
   go("menu");
 }
 
@@ -955,6 +991,7 @@ function shiftPart(section, dir){
   if(section==="reading"){ renderReadingTabs(); renderReadingPart(); }
   if(section==="writing"){ renderWritingTabs(); renderWritingPart(); }
   if(section==="listening"){ renderListeningTabs(); renderListeningPart(); }
+  if(dir > 0) pushToServer(false, true);
 }
 
 function renderReadingPart(){
@@ -1018,7 +1055,7 @@ function renderReadingPart(){
   document.getElementById("reading-content").innerHTML = html;
   document.getElementById("reading-prev").disabled = part.id===1;
   document.getElementById("reading-next").textContent = part.id===8 ? "Finalizar sección →" : "Siguiente parte →";
-  document.getElementById("reading-next").onclick = part.id===8 ? function(){ go("menu"); } : function(){ shiftPart("reading",1); };
+  document.getElementById("reading-next").onclick = part.id===8 ? function(){ pushToServer(false, true); go("menu"); } : function(){ shiftPart("reading",1); };
 }
 
 function renderPassageStatic(raw){
@@ -1048,7 +1085,7 @@ function renderWritingTabs(){
   }).join("");
   document.getElementById("writing-tabs").innerHTML = html;
 }
-function setWritingPart(n){ state.current.writing = n; saveState(); renderWritingTabs(); renderWritingPart(); }
+function setWritingPart(n){ state.current.writing = n; saveState(); renderWritingTabs(); renderWritingPart(); pushToServer(false, true); }
 
 function wcClass(n){ if(n===0) return ""; if(n<220) return "low"; if(n>260) return "high"; return "ok"; }
 
@@ -1114,7 +1151,7 @@ function renderListeningTabs(){
   }).join("");
   document.getElementById("listening-tabs").innerHTML = html;
 }
-function setListeningPart(id){ state.current.listening = id; saveState(); renderListeningTabs(); renderListeningPart(); }
+function setListeningPart(id){ state.current.listening = id; saveState(); renderListeningTabs(); renderListeningPart(); pushToServer(false, true); }
 
 function renderListeningPart(){
   var part = LISTENING_PARTS.find(function(p){ return p.id === state.current.listening; });
